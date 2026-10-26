@@ -1,0 +1,36 @@
+{
+  "tag": "v0.3.0-beta.4",
+  "targetCommit": "7bd23b3b9435abcf61c0f4ff296e343cb09fe953",
+  "title": "Detailed Joker Effects 0.3.0-beta.4",
+  "body": "Fixes conditional card previews and makes native descriptions easier to read.\n\n- Bouncing Ball and other conditional bonuses retain their trigger-specific values while inactive.\n- Red No bonus is limited to pickup previews. Weapon applicability restrictions remain in effect; owned stacks keep their current totals.\n- Prickly Pear shows its known flat bonus, retaliation formula and trigger condition. F7 retains full event-dependent readings.\n- Native descriptions are left-aligned, wrap and scroll, and restore their original layout on unload/reload.\n\n**Install:** download `FFWJokerInfo-0.3.0-beta.4.zip`, fully exit the game, and copy the contents of `GameRoot` into the game folder. Restart the game to load the updated Lua modules. Requires a separate UE4SS installation; baseline game 0.3.0.7 / UE4SS build 1181.\n\n**Validation:** 26 standalone Lua test files passed, including 27,600 description scenarios across 183 card/upgrade entries. Archive contents, CRC and SHA-256 were verified against the explicit allowlist. The latest layout has offline coverage; final in-game visual confirmation remains pending.\n\n更详细的奇术卡效果更新：修复条件加成与资源状态误报，保留不适用武器的“无加成”，精简尖刺反伤说明并修正文字对齐。F7 完整规则保持不变。\n\n运行包、独立源码包及校验文件均已提供，仅包含本卡牌组件和必要依赖，不包含存档、日志、玩家数据、修改器或战斗统计。安装无需命令行，更新后须完全重启游戏。",
+  "assets": [
+    {
+      "name": "FFWJokerInfo-0.3.0-beta.4.zip",
+      "blob": "6a6961f42c8b78403eff01ee6662e8f43d98be2b",
+      "bytes": 140228,
+      "sha256": "e9374353b3c4aeaedca1ad1967cad54c53ed8984a0d84704f3bf8d2a2a1b97a9",
+      "contentType": "application/zip"
+    },
+    {
+      "name": "FFWJokerInfo-source-0.3.0-beta.4.zip",
+      "blob": "a436b5ea2c940a21876927d8bd131cfc6245dd59",
+      "bytes": 202823,
+      "sha256": "0253aa4b02bb65bcdb8506d0f7fb2ca9fb37ff7bc5ae82bea173c561af75b176",
+      "contentType": "application/zip"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "blob": "b60bc46fae4a1d32f42873b7320bec7ccd26b3be",
+      "bytes": 199,
+      "sha256": "8e365afee1992cc578c91cad0737548da201e72ecfcaf939cbddad2a20fdac25",
+      "contentType": "text/plain"
+    },
+    {
+      "name": "release-manifest.json",
+      "blob": "5e97d1e82726cd534c316cdf814631609b74a7f0",
+      "bytes": 522,
+      "sha256": "fdef6f6a35427ea4fd273cbcb4e62e73a297eaf8c176d407fc82406c4d43ee5d",
+      "contentType": "application/json"
+    }
+  ]
+}
