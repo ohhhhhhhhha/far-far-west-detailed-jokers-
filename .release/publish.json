@@ -1,0 +1,36 @@
+{
+  "tag": "v0.3.0-beta.3",
+  "title": "Detailed Joker Effects 0.3.0-beta.3",
+  "targetCommit": "f761ee6c9b61c1329b81c85bf80efc2ea24e9d92",
+  "body": "Detailed Joker Effects is now published as an independent repository and download.\n\n- **Install:** download `FFWJokerInfo-0.3.0-beta.3.zip`, extract it, and copy the contents of `GameRoot` into the game folder.\n- **Source:** `FFWJokerInfo-source-0.3.0-beta.3.zip` contains only this component and its required dependencies.\n- **Requirements:** Windows x64; Far Far West baseline 0.3.0.7; a separate compatible UE4SS installation (tested build 1181).\n- Runtime code is unchanged from the accepted beta.2 build. SHA-256 checksums are included.\n\n更详细的奇术卡资料现已独立发布。安装时下载运行 ZIP，将 GameRoot 内的内容复制到游戏目录即可，无需命令行。源码、双语 README、安装与卸载说明及校验文件均已分开提供。\n\n本组件补充原卡面描述，并通过 F7 查看完整详情；不包含刷卡或战斗统计功能。",
+  "assets": [
+    {
+      "name": "FFWJokerInfo-0.3.0-beta.3.zip",
+      "blob": "bdfca9b1185bee98a8c791d09f4f1031fdc7c570",
+      "sha256": "d75466463310f084d211aefd270b3dc8ce4dd48cc492ae0cde6631bc119246b4",
+      "bytes": 136629,
+      "contentType": "application/zip"
+    },
+    {
+      "name": "FFWJokerInfo-source-0.3.0-beta.3.zip",
+      "blob": "96f5320269029e312d29ec197abfd3bb222ea5e9",
+      "sha256": "2aa4a84b913b4164d3acab306e7da207ac388b4846d0c34841d4b37d03bcafa6",
+      "bytes": 189955,
+      "contentType": "application/zip"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "blob": "015e8bab16acf8f533a054dc2c3d67d23ad1e411",
+      "sha256": "1d9fde23cd41a217952da847b9de526152e8c4519c5bf8c40e29fb69d68a1a61",
+      "bytes": 199,
+      "contentType": "text/plain"
+    },
+    {
+      "name": "release-manifest.json",
+      "blob": "7229b51d6974abd39423f5c939cda1eaa10d52c6",
+      "sha256": "007ee9546a629cabccf71eb176170fe0f0162422b48a5c5cbd8cccf794b0d8f9",
+      "bytes": 522,
+      "contentType": "application/json"
+    }
+  ]
+}

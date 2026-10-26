@@ -1,0 +1,2 @@
+d75466463310f084d211aefd270b3dc8ce4dd48cc492ae0cde6631bc119246b4  FFWJokerInfo-0.3.0-beta.3.zip
+2aa4a84b913b4164d3acab306e7da207ac388b4846d0c34841d4b37d03bcafa6  FFWJokerInfo-source-0.3.0-beta.3.zip
