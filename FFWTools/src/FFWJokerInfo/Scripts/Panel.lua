@@ -1,0 +1,332 @@
+local Cards=require('Cards')
+local Effects=require('Effects')
+local Inventory=require('Inventory')
+local L=require('Locale')
+local P={}
+local headings={'\n\n【奇术卡信息】','\n\n[Joker Info]'}
+setmetatable(P,{__index=function(_,key)
+    if key=='heading' then return L.choose(headings[1],headings[2]) end
+    if key=='marker' then return L.choose(headings[1],headings[2])..'\n' end
+end})
+local statusText={verified='已显示指标的公式已核对',partial='部分规则待核实',unresolved='规则待核实',disabled='当前版本禁用'}
+local function isUpgrade(c) return c.id:lower():find('jokerupgrade',1,true)~=nil end
+local function strip(s)
+    local first
+    for _,heading in ipairs(headings) do
+        local p=s:find(heading,1,true);if p and (not first or p<first) then first=p end
+    end
+    return first and s:sub(1,first-1) or s
+end
+P.stripDescription=strip
+local function originalDescription(c,original)
+    local text=strip(original or L.card(c.id,'description') or c.description)
+    if text==L.card(c.id,'description','zh') or text==L.card(c.id,'description','en') then
+        return L.card(c.id,'description')
+    end
+    return text
+end
+local function groupsFor(s,id,item)
+    if item and Inventory.applies(id,item) then
+        local g=Inventory.group(s,item)
+        for _,known in ipairs(Inventory.groups(s)) do if known.itemName:lower()==item:lower() then g.label=known.label end end
+        return {g}
+    end
+    if item then return {} end
+    local result={}
+    for _,g in ipairs(Inventory.groups(s)) do if Inventory.applies(id,g.itemName) then result[#result+1]=g end end
+    return result
+end
+function P.description(id,s,item,kind,original)
+    local c=Cards.get(id)
+    if not c then return original end
+    local r=Effects.rule(id)
+    local upgrade=isUpgrade(c)
+    local base=originalDescription(c,original)..P.marker
+    if r and r.status=='disabled' then
+        return base..L.text('当前版本禁用；不提供正常获取或效果预览'),{noBonus=false}
+    end
+    local lines={};local groups=groupsFor(s,id,item)
+    if #groups==0 and not s.complete then return base..L.text('效果待读取'),{noBonus=false} end
+    local function differs(a,b)
+        if type(a)=='number' and type(b)=='number' then return math.abs(a-b)>1e-8 end
+        return a~=b
+    end
+    local function unknown(m)
+        return m and m.value==nil and (m.missing~=nil or m.potential~=nil)
+    end
+    for _,g in ipairs(groups) do
+        local label=g.label or g.itemName
+        if not g.complete then lines[#lines+1]=label..'：效果待读取'
+        else
+            local equipped=(g.parts[c.id] or {}).equipped or 0
+            local atEquipLimit=not upgrade and kind=='equip' and equipped>=c.maxAvailable
+            local current=kind=='current'
+            local increment=current and -math.min(1,Effects.count(g.counts,c.id)) or 1
+            local inputs
+            if current then
+                inputs={};for k,v in pairs(g.inputs) do inputs[k]=v end
+                inputs.candidateKind=kind;inputs.after={}
+                if not upgrade and inputs.activeCardCount then inputs.after.activeCardCount=inputs.activeCardCount+increment end
+            else inputs=Inventory.candidateInputs(g,id,kind) end
+            local p=Effects.preview(id,g.counts,inputs,increment)
+            local keys={}
+            for key in pairs(p.current.metrics) do
+                local gravityDetail=p.current.metrics.finalGravityScale and
+                    (key=='gravityScaleDelta' or key=='runtimeGravityScale' or key=='gravityFloorCardCount')
+                if not gravityDetail and not p.current.metrics[key].detailOnly and key~='equippedSameElementSpells' then keys[#keys+1]=key end
+            end
+            local priority={finalGravityScale=1,gravityReduction=2}
+            table.sort(keys,function(a,b)
+                if priority[a] or priority[b] then return (priority[a] or 99)<(priority[b] or 99) end
+                return a<b
+            end)
+            local details={}
+            if not atEquipLimit and increment~=0 then
+                if #keys==0 and p.status~='verified' then details[1]='效果规则待核实' end
+                for _,key in ipairs(keys) do
+                    local m,nextMetric=p.current.metrics[key],p.after.metrics[key]
+                    local changed=nextMetric and differs(m.value,nextMetric.value)
+                    local missing=unknown(m) or unknown(nextMetric)
+                    if changed or missing then
+                        local metricLabel=({finalGravityScale='重力系数',gravityReduction='相比基础重力'})[key]
+                            or (L.language()=='zh' and m.label:gsub('^本卡','') or m.label)
+                        local detail=metricLabel..'：'..Effects.formatMetric(m)
+                        -- Tab shows current values; its removal comparison is only
+                        -- a relevance filter, never another acquisition preview.
+                        if not current and nextMetric and (changed or differs(m.potential,nextMetric.potential)) then
+                            detail=detail..' → '..Effects.formatMetric(nextMetric)
+                        end
+                        if m.condition and key~='finalGravityScale' then detail=detail..'（'..m.condition..'）' end
+                        details[#details+1]=detail
+                    end
+                end
+            end
+            if #details>0 then
+                if #groups>1 then lines[#lines+1]=label..'：' end
+                local elementCount=p.current.metrics.equippedSameElementSpells
+                if elementCount then lines[#lines+1]=elementCount.label..'：'..Effects.formatMetric(elementCount) end
+                for _,detail in ipairs(details) do lines[#lines+1]=detail end
+            end
+        end
+    end
+    if #lines==0 then return base..L.text('无加成'),{noBonus=true,plainText=base:sub(1,-2)} end
+    return base..L.text(table.concat(lines,'\n')),{noBonus=false}
+end
+function P.entries(s)
+    local entries={}
+    for _,g in ipairs(Inventory.groups(s)) do
+        -- Preserve DT order, with permanent upgrades after collectible cards.
+        local ids={};for id in pairs(g.counts) do ids[#ids+1]=id end
+        table.sort(ids,function(a,b)
+            local ua=a:lower():find('jokerupgrade',1,true)~=nil
+            local ub=b:lower():find('jokerupgrade',1,true)~=nil
+            if ua~=ub then return not ua end
+            return Cards.get(a).name<Cards.get(b).name
+        end)
+        for _,id in ipairs(ids) do entries[#entries+1]={card=Cards.get(id),group=g,count=g.counts[id]} end
+    end
+    return entries
+end
+function P.page(s,index)
+    local entries=P.entries(s)
+    index=math.max(1,math.min(index or 1,math.max(1,#entries)))
+    local page={index=index,count=#entries,entries=entries,rows={},pageNumber=math.floor((index-1)/10)+1,
+        pageCount=math.max(1,math.ceil(#entries/10)),title=L.text('当前奇术卡'),list='',detail=''}
+    if #entries==0 then
+        page.detail=L.text(s.complete and '当前没有已生效的奇术卡或升级。' or '总份数待读取：'..table.concat(s.missing,'、'))
+        return page
+    end
+    local selected=entries[index];page.selected=selected
+    local g,c=selected.group,selected.card
+    local start=math.floor((index-1)/10)*10+1
+    local list={}
+    for k=start,math.min(start+9,#entries) do
+        local e=entries[k]
+        list[#list+1]=(k==index and '▶ ' or '   ')..L.text(e.group.label)..' · '..(L.card(e.card.id,'name') or e.card.name)
+            ..(isUpgrade(e.card) and (' '..e.count..L.text('级')) or (' ×'..e.count))
+        page.rows[#page.rows+1]={index=k,text=list[#list],selected=k==index}
+    end
+    page.list=table.concat(list,'\n\n')
+    page.title=L.text(g.label)..' · '..(L.card(c.id,'name') or c.name)..'  ['..index..'/'..#entries..']'
+    local parts=g.parts[c.id]
+    local lines={'适用：'..g.label,
+        '份数来源：装备 '..parts.equipped..' ＋ 任务 '..parts.runtime..' ＋ 升级 '..parts.upgrades}
+    if not g.complete then
+        lines[#lines+1]='总份数待读取；缺少来源：'..table.concat(g.missing,'、')
+    else
+        local p=Effects.preview(c.id,g.counts,g.inputs,0)
+        lines[#lines+1]=isUpgrade(c) and ('当前升级 '..p.currentCount..' 级') or ('当前同卡累计 '..p.currentCount..' 份')
+        lines[#lines+1]='当前：'..p.current.text
+        lines[#lines+1]='叠加方式：'..(p.stacking or '待核实')
+        if not isUpgrade(c) then lines[#lines+1]='大厅装备份数上限：'..c.maxAvailable..'（不是任务效果上限）' end
+        lines[#lines+1]='效果上限：'..(p.effectCap or (p.status=='unresolved' and '待核实' or '已核对路径未发现单卡上限'))
+        if p.conditions then lines[#lines+1]=p.conditions end
+        if p.status~='verified' then lines[#lines+1]=statusText[p.status] end
+    end
+    page.detail=(L.card(c.id,'description') or c.description)..'\n\n'..L.text(table.concat(lines,'\n\n'))
+    return page
+end
+
+-- UMG presentation and the search panel's temporary input focus.
+local function valid(o)
+    local ok,value=pcall(function() return o and o:IsValid() end);return ok and value
+end
+local function color(r,g,b,a) return {R=r,G=g,B=b,A=a or 1} end
+function P.setNoBonusText(parent,tree,source,text,visible)
+    if visible and not valid(text) then
+        assert(valid(parent) and valid(tree),'无加成文字缺少描述容器')
+        text=StaticConstructObject(StaticFindObject('/Script/UMG.TextBlock'),tree)
+        assert(valid(text),'创建无加成文字失败')
+        text:SetFont(source.Font);text:SetAutoWrapText(true)
+        local tint=text.ColorAndOpacity;tint.SpecifiedColor=color(1,.2,.2);text:SetColorAndOpacity(tint)
+        parent:AddChild(text)
+    end
+    if valid(text) then text:SetText(FText(L.text('无加成')));text:SetVisibility(visible and 3 or 2) end
+    return text
+end
+function P.setSearchInput(view,active)
+    if view.mouse then
+        if active then view.mouse:show(view.search) else view.mouse:hide() end
+        return
+    end
+    local prior=view.searchInput
+    if active and not prior then
+        local controller=require('UEHelpers').GetPlayerController()
+        assert(valid(controller) and valid(view.search),'搜索输入尚未就绪')
+        prior={controller=controller,cursor=controller.bShowMouseCursor==true}
+        view.searchInput=prior
+        controller.bShowMouseCursor=true
+        if prior.cursor then
+            -- A game menu already owns input. Give its mode to the search field
+            -- without replacing that mode, and release only focus on close.
+            view.search:SetUserFocus(controller)
+        else view.library:SetInputMode_GameAndUIEx(controller,view.search,0,false,false) end
+    elseif not active and prior then
+        if valid(prior.controller) then
+            if prior.cursor then view.library:SetFocusToGameViewport()
+            else view.library:SetInputMode_GameOnly(prior.controller,false) end
+            prior.controller.bShowMouseCursor=prior.cursor
+        end
+        view.searchInput=nil
+    end
+end
+function P.createView(query,onAction)
+    local controller=require('UEHelpers').GetPlayerController()
+    local host=StaticFindObject('/Game/Interfaces/UI_Joker_Informations.UI_Joker_Informations_C')
+    local library=StaticFindObject('/Script/UMG.WidgetBlueprintLibrary')
+    assert(valid(controller) and valid(host) and valid(library),'玩家控制器或 UMG 宿主未加载')
+    local widget=library:GetCDO():Create(controller,host,controller)
+    assert(valid(widget),'创建奇术卡面板失败')
+    widget.bHasScriptImplementedPaint=false;widget.bIsFocusable=true
+    local tree=widget.WidgetTree
+    local inheritedVisibility=tree.RootWidget.Visibility
+    local canvas=StaticConstructObject(StaticFindObject('/Script/UMG.CanvasPanel'),tree)
+    assert(valid(canvas),'创建奇术卡 CanvasPanel 失败')
+    canvas.Visibility=inheritedVisibility;tree.RootWidget=canvas
+    local textClass=StaticFindObject('/Script/UMG.TextBlock')
+    local barClass=StaticFindObject('/Script/UMG.ProgressBar')
+    local font=StaticFindObject('/Game/Materials/Fonts/Font_Text.Font_Text')
+    assert(valid(font) and valid(textClass) and valid(barClass),'UMG 字体或控件类未加载')
+    local function place(o,x,y,w,h)
+        assert(valid(o),'创建 UMG 控件失败')
+        local slot=canvas:AddChildToCanvas(o)
+        slot:SetPosition({X=x,Y=y});slot:SetSize({X=w,Y=h})
+        return o
+    end
+    local background=place(StaticConstructObject(barClass,tree),0,0,1080,680)
+    background:SetPercent(1);background:SetFillColorAndOpacity(color(.025,.035,.05,.98))
+    local function label(x,y,w,h,size)
+        local text=place(StaticConstructObject(textClass,tree),x,y,w,h)
+        local fi=text.Font;fi.FontObject=font;fi.Size=size;text:SetFont(fi)
+        local tint=text.ColorAndOpacity;tint.SpecifiedColor=color(.94,.95,.97);text:SetColorAndOpacity(tint)
+        text:SetAutoWrapText(true)
+        return text
+    end
+    local view={widget=widget,root=canvas,background=background,
+        title=label(24,18,930,46,26),hint=label(24,63,1030,32,16),
+        list=label(24,112,316,540,17),detail=label(370,112,680,540,18)}
+    -- The same width and position keep the F7 detail layout. The F4 preview
+    -- can add a separately colored status below the ordinary description.
+    view.tree=tree;view.library=library:GetCDO()
+    view.detailScroll=place(StaticConstructObject(StaticFindObject('/Script/UMG.ScrollBox'),tree),370,112,680,540)
+    view.detailScroll:SetVisibility(0)
+    view.detailBox=StaticConstructObject(StaticFindObject('/Script/UMG.VerticalBox'),tree)
+    view.detailScroll:AddChild(view.detailBox)
+    canvas:RemoveChild(view.detail);view.detailBox:AddChild(view.detail)
+    view.detail:SetVisibility(3);view.detailBox:SetVisibility(4)
+    -- Lazy loading preserves Panel.description's pure use in the desktop bridge.
+    view.mouse=require('MousePanel').new({host=widget,root=canvas,tree=tree,font=font,controller=controller,
+        library=view.library,onAction=onAction})
+    view.pageLabel=label(24,644,316,24,14)
+    local search=StaticConstructObject(StaticFindObject('/Script/UMG.EditableTextBox'),tree)
+    assert(valid(search),'创建卡牌搜索框失败')
+    -- EditableTextBox in UE5.8 stores its font in WidgetStyle.TextStyle.
+    -- Configure reflected properties before the Slate widget is constructed.
+    search.WidgetStyle.TextStyle.Font=view.list.Font
+    search.WidgetStyle.BackgroundColor.SpecifiedColor=color(.06,.08,.12)
+    search.ClearKeyboardFocusOnCommit=false;search.SelectAllTextWhenFocused=true
+    search:SetHintText(FText(L.text('搜索卡名 / 英文 ID')));search:SetText(FText(query or ''))
+    search:SetForegroundColor(color(.94,.95,.97))
+    view.search=place(search,24,108,316,40);search:SetVisibility(2)
+    canvas:SetVisibility(4)
+    view.hint:SetText(FText(L.text('F7 显示／隐藏   F5 上一项   F6 下一项   每秒刷新；仅显示，不更改装备')))
+    widget:SetDesiredSizeInViewport({X=1080,Y=680})
+    widget:SetPositionInViewport({X=40,Y=40},true)
+    widget:SetColorAndOpacity(color(1,1,1,0))
+    widget:SetVisibility(2)
+    widget:AddToViewport(9950)
+    return view
+end
+function P.render(view,page,visible)
+    assert(valid(view.widget),'面板已失效')
+    view.title:SetText(FText(page.title))
+    view.hint:SetText(FText(page.hint or L.choose('点击选卡／翻页；详情区滚轮滚动   F7 开关   F5/F6 选卡   Shift 翻页',
+        'Click cards / pages; scroll details   F7 Toggle   F5/F6 Select   Shift Page')))
+    view.list:SetText(FText(page.list))
+    view.detail:SetText(FText(page.plainDetail or page.detail))
+    view.noBonusText=P.setNoBonusText(view.detailBox,view.tree,view.detail,view.noBonusText,page.noBonus)
+    local searching=visible and page.searchable and valid(view.search)
+    if valid(view.search) then
+        view.search:SetHintText(FText(page.inputHint or L.text('搜索卡名 / 英文 ID')))
+        view.search:SetVisibility(searching and 0 or 2)
+        view.list.Slot:SetPosition({X=24,Y=page.searchable and 162 or 112})
+        view.list.Slot:SetSize({X=316,Y=page.searchable and 490 or 540})
+    end
+    view.list:SetVisibility(page.searchable and 3 or 2)
+    local controls=not page.searchable
+    for index=1,10 do
+        local row=(page.rows or {})[index]
+        view.mouse:button('row-'..index,{text=row and row.text or '',action='select',value=row and row.index,
+            selected=row and row.selected,visible=controls and row~=nil,x=24,y=112+(index-1)*48,width=316,height=44,size=16})
+    end
+    local count=page.count or 0
+    for _,control in ipairs({
+        {'previousPage','<<',page.pageNumber and page.pageNumber>1},
+        {'previous','<',count>0 and page.index>1},
+        {'next','>',count>0 and page.index<count},
+        {'nextPage','>>',page.pageNumber and page.pageNumber<page.pageCount},
+    }) do
+        local index=({previousPage=0,previous=1,next=2,nextPage=3})[control[1]]
+        view.mouse:button(control[1],{text=control[2],action=control[1],enabled=control[3]==true,visible=controls,
+            x=24+index*80,y=602,width=76,height=34,size=18})
+    end
+    view.mouse:button('close',{text=L.choose('关闭','Close'),action='close',x=966,y=18,width=90,height=36,size=16})
+    view.pageLabel:SetText(FText(controls and string.format(L.choose('第 %d / %d 页','Page %d / %d'),page.pageNumber or 1,page.pageCount or 1) or ''))
+    local selected=page.selected
+    local detailKey=selected and selected.card and ((selected.group and selected.group.itemName or '')..':'..selected.card.id) or page.index
+    if view.detailKey~=detailKey then view.detailScroll:SetScrollOffset(0);view.detailKey=detailKey end
+    -- SelfHitTestInvisible lets native buttons and the ScrollBox receive mouse
+    -- input; Collapsed removes every hidden hit target.
+    view.widget:SetVisibility(visible and 4 or 2)
+    view.widget:SetColorAndOpacity(color(1,1,1,visible and 1 or 0))
+    if visible then view.mouse:show(searching and view.search or view.widget) else view.mouse:hide() end
+end
+function P.isViewCurrent(view)
+    return view and view.mouse and view.mouse:isCurrent(require('UEHelpers').GetPlayerController())
+end
+function P.destroyView(view)
+    if view.mouse then view.mouse:dispose() else P.setSearchInput(view,false) end
+    if valid(view.widget) then view.widget:SetVisibility(2);view.widget:RemoveFromParent() end
+end
+P.valid=valid
+return P

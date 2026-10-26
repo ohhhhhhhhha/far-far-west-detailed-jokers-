@@ -1,0 +1,8 @@
+/dist/
+/node_modules/
+FFWTools/src/FFWTrainerGui/build/
+**/Data/
+*.sav
+*.log
+*.pdb
+.vs/

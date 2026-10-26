@@ -1,0 +1,156 @@
+{
+  "schemaVersion": 1,
+  "id": "FFWJokerInfo",
+  "files": [
+    {
+      "source": "FFWTools/src/FFWJokerInfo/Scripts/Cards.lua",
+      "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/Cards.lua"
+    },
+    {
+      "source": "FFWTools/src/FFWJokerInfo/Scripts/Effects.lua",
+      "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/Effects.lua"
+    },
+    {
+      "source": "FFWTools/src/FFWJokerInfo/Scripts/HeroRules.lua",
+      "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/HeroRules.lua"
+    },
+    {
+      "source": "FFWTools/src/FFWJokerInfo/Scripts/WeaponRules.lua",
+      "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/WeaponRules.lua"
+    },
+    {
+      "source": "FFWTools/src/FFWJokerInfo/Scripts/UpgradeRules.lua",
+      "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/UpgradeRules.lua"
+    },
+    {
+      "source": "FFWTools/src/FFWJokerInfo/Scripts/Inventory.lua",
+      "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/Inventory.lua"
+    },
+    {
+      "source": "FFWTools/src/FFWJokerInfo/Scripts/Panel.lua",
+      "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/Panel.lua"
+    },
+    {
+      "source": "FFWTools/src/FFWJokerInfo/Scripts/main.lua",
+      "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/main.lua"
+    },
+    {
+      "source": "FFWTools/src/FFWJokerInfo/Scripts/Locale.lua",
+      "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/Locale.lua"
+    },
+    {
+      "source": "FFWTools/src/FFWJokerInfo/Scripts/English.lua",
+      "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/English.lua"
+    },
+    {
+      "source": "FFWTools/src/FFWJokerInfo/Scripts/CardText.lua",
+      "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/CardText.lua"
+    },
+    {
+      "source": "FFWTools/src/FFWJokerInfo/Scripts/MousePanel.lua",
+      "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/MousePanel.lua"
+    },
+    {
+      "source": "FFWTools/src/FFWJokerInfo/enabled.txt",
+      "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/enabled.txt"
+    },
+    {
+      "source": "README.md",
+      "path": "README.md"
+    },
+    {
+      "source": "README.zh-CN.md",
+      "path": "README.zh-CN.md"
+    },
+    {
+      "source": "INSTALL.en.md",
+      "path": "INSTALL.en.md"
+    },
+    {
+      "source": "INSTALL.zh-CN.md",
+      "path": "INSTALL.zh-CN.md"
+    },
+    {
+      "source": "DEVELOPMENT.md",
+      "path": "DEVELOPMENT.md"
+    },
+    {
+      "source": "CHANGELOG.md",
+      "path": "CHANGELOG.md"
+    },
+    {
+      "source": "LICENSE",
+      "path": "LICENSE"
+    },
+    {
+      "source": "THIRD-PARTY-NOTICES.md",
+      "path": "THIRD-PARTY-NOTICES.md"
+    },
+    {
+      "source": "licenses/UE4SS.txt",
+      "path": "licenses/UE4SS.txt"
+    },
+    {
+      "source": "release.json",
+      "path": "release.json"
+    }
+  ],
+  "directories": [],
+  "obsoleteFiles": [
+    "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/Spawner.lua"
+  ],
+  "sourceFiles": [
+    ".gitignore",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "DEVELOPMENT.md",
+    "FFWTools/src/FFWJokerInfo/Scripts/CardText.lua",
+    "FFWTools/src/FFWJokerInfo/Scripts/Cards.lua",
+    "FFWTools/src/FFWJokerInfo/Scripts/Effects.lua",
+    "FFWTools/src/FFWJokerInfo/Scripts/English.lua",
+    "FFWTools/src/FFWJokerInfo/Scripts/HeroRules.lua",
+    "FFWTools/src/FFWJokerInfo/Scripts/Inventory.lua",
+    "FFWTools/src/FFWJokerInfo/Scripts/Locale.lua",
+    "FFWTools/src/FFWJokerInfo/Scripts/MousePanel.lua",
+    "FFWTools/src/FFWJokerInfo/Scripts/Panel.lua",
+    "FFWTools/src/FFWJokerInfo/Scripts/UpgradeRules.lua",
+    "FFWTools/src/FFWJokerInfo/Scripts/WeaponRules.lua",
+    "FFWTools/src/FFWJokerInfo/Scripts/main.lua",
+    "FFWTools/src/FFWJokerInfo/enabled.txt",
+    "FFWTools/tests/bilingual_catalog_test.lua",
+    "FFWTools/tests/common_mouse_test.lua",
+    "FFWTools/tests/joker_compact_description_test.lua",
+    "FFWTools/tests/joker_context_preview_test.lua",
+    "FFWTools/tests/joker_extended_test.lua",
+    "FFWTools/tests/joker_gravity_test.lua",
+    "FFWTools/tests/joker_hero_completion_test.lua",
+    "FFWTools/tests/joker_inline_layout_test.lua",
+    "FFWTools/tests/joker_inventory_test.lua",
+    "FFWTools/tests/joker_live_context_test.lua",
+    "FFWTools/tests/joker_mouse_test.lua",
+    "FFWTools/tests/joker_next_rules_spec.lua",
+    "FFWTools/tests/joker_panel_test.lua",
+    "FFWTools/tests/joker_reactive_cards_test.lua",
+    "FFWTools/tests/joker_reactive_inventory_test.lua",
+    "FFWTools/tests/joker_reload_context_test.lua",
+    "FFWTools/tests/joker_rules_test.lua",
+    "FFWTools/tests/joker_runtime_test.lua",
+    "FFWTools/tests/joker_spell_and_events_test.lua",
+    "FFWTools/tests/joker_spell_context_test.lua",
+    "FFWTools/tests/joker_upgrade_completion_test.lua",
+    "FFWTools/tests/joker_weapon_completion_test.lua",
+    "FFWTools/tests/locale_core_test.lua",
+    "FFWTools/tests/overlay_mouse_engine.lua",
+    "INSTALL.en.md",
+    "INSTALL.zh-CN.md",
+    "LICENSE",
+    "README.md",
+    "README.zh-CN.md",
+    "THIRD-PARTY-NOTICES.md",
+    "licenses/UE4SS.txt",
+    "package-manifest.json",
+    "package.json",
+    "package.mjs",
+    "release.json"
+  ]
+}
