@@ -100,6 +100,7 @@
     "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/Spawner.lua"
   ],
   "sourceFiles": [
+    ".github/workflows/release.yml",
     ".gitignore",
     "CHANGELOG.md",
     "CONTRIBUTING.md",

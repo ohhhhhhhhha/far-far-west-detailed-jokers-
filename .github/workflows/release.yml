@@ -1,0 +1,75 @@
+name: Publish release assets
+
+on:
+  push:
+    branches: ["publish/**"]
+    paths: [".release/**"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify and publish prepared files
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const { createHash } = require('node:crypto');
+            const repo = context.repo;
+            const { data: encoded } = await github.rest.repos.getContent({
+              ...repo, path: '.release/publish.json', ref: context.sha,
+            });
+            const manifest = JSON.parse(Buffer.from(encoded.content, 'base64').toString('utf8'));
+            const payloads = [];
+            for (const item of manifest.assets) {
+              const { data: blob } = await github.rest.git.getBlob({ ...repo, file_sha: item.blob });
+              const bytes = Buffer.from(blob.content, 'base64');
+              const hash = createHash('sha256').update(bytes).digest('hex');
+              if (hash !== item.sha256 || bytes.length !== item.bytes) {
+                throw new Error('Asset verification failed: ' + item.name);
+              }
+              payloads.push({ ...item, data: bytes });
+            }
+            let release;
+            try {
+              release = (await github.rest.repos.getReleaseByTag({ ...repo, tag: manifest.tag })).data;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+              release = (await github.rest.repos.createRelease({
+                ...repo, tag_name: manifest.tag, target_commitish: manifest.targetCommit,
+                name: manifest.title, body: manifest.body, draft: true, prerelease: true,
+                make_latest: 'false',
+              })).data;
+            }
+            const existing = await github.paginate(github.rest.repos.listReleaseAssets, {
+              ...repo, release_id: release.id, per_page: 100,
+            });
+            for (const item of payloads) {
+              const old = existing.find(asset => asset.name === item.name);
+              if (old) {
+                if (old.size !== item.bytes || old.digest !== 'sha256:' + item.sha256) {
+                  throw new Error('An existing asset differs: ' + item.name);
+                }
+                continue;
+              }
+              const uploaded = (await github.rest.repos.uploadReleaseAsset({
+                ...repo, release_id: release.id, name: item.name,
+                headers: { 'content-type': item.contentType, 'content-length': item.bytes },
+                data: item.data,
+              })).data;
+              if (uploaded.size !== item.bytes || uploaded.digest !== 'sha256:' + item.sha256) {
+                throw new Error('Uploaded asset verification failed: ' + item.name);
+              }
+            }
+            release = (await github.rest.repos.updateRelease({
+              ...repo, release_id: release.id, draft: false, prerelease: true,
+              name: manifest.title, body: manifest.body, make_latest: 'false',
+            })).data;
+            core.info('Published ' + release.html_url);

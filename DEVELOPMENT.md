@@ -9,3 +9,9 @@ Existing Lua checks are under FFWTools/tests. Their paths were adapted to this s
 Follow [UE4SS’s Lua layout](https://docs.ue4ss.com/guides/creating-a-lua-mod.html) and [activation behavior](https://docs.ue4ss.com/guides/installing-a-c%2B%2B-mod.html). UE5LuaModKit is a [community reference](https://github.com/qycnet/UE5LuaModKit) for organization; its generic mod.lua/RegisterMod examples are not the UE4SS API contract. Validate game calls against the supported version.
 
 本仓库为独立组件，所需共享文件已直接纳入自身 Scripts 目录。package.mjs 通过明确文件清单生成本组件运行包、源码包与校验文件，不启动游戏、不上传文件。既有测试路径已适配此布局，运行代码保持不变；玩家安装无需命令行。功能改动需运行相关 Lua/C# 检查，原生行为另行在游戏内验证。
+
+## Release publishing / 发布附件
+
+The GitHub workflow publishes explicitly prepared artifacts from publish/* branches through the official GitHub JavaScript API. It verifies SHA-256 and size before publishing the release. Its token is limited to repository contents; it uses no shell commands and does not build or run the game. Publication payload files live only on the upload branch, not on main or in the source archive.
+
+GitHub 工作流从 publish/* 分支读取已准备的附件，通过官方 JavaScript API 校验并发布 Release。只使用仓库内容权限，不运行批处理、命令行或游戏；上传载荷不进入 main 和源码包。
