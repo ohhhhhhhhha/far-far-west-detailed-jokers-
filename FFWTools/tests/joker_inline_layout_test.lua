@@ -24,10 +24,13 @@ local function panel(name)
 end
 local function textBlock(name,value,size)
     local text=obj(name);text.value=value or '';text.Font={Size=size or 19};text.AutoWrapText=true
+    text.Justification=1;text.RenderTransform={Translation={X=0,Y=4}}
     text.ColorAndOpacity={SpecifiedColor={R=.94,G=.95,B=.97,A=1}}
     function text:GetText() return self.value end;function text:SetText(v) self.value=v end
     function text:GetParent() return self.parent end;function text:SetFont(v) self.Font=v end
     function text:SetAutoWrapText(v) self.AutoWrapText=v end
+    function text:SetJustification(v) self.Justification=v end
+    function text:SetRenderTranslation(v) self.RenderTransform.Translation=v end
     function text:SetColorAndOpacity(v) self.ColorAndOpacity=v end
     function text:SetVisibility(v) self.Visibility=v end
     return text
@@ -73,7 +76,20 @@ eq(text.parent:GetFullName(),'/Script/UMG.ScrollBox','same original TextBlock is
 eq(text.Font.Size,15);eq(text.value:find('1.15 → 1.1',1,true)~=nil,true)
 local record=mod.restores[text:GetFullName()]
 eq(record.descriptionBox.WidthOverride,210);eq(record.descriptionBox.HeightOverride,260)
+eq(text.Justification,0,'long descriptions align left')
+eq(text.RenderTransform.Translation.Y,0,'the original four-pixel offset is removed inside the scroll area')
+eq(text.AutoWrapText,true,'wrap uses the bounded scroll geometry')
+eq(text.Slot.HorizontalAlignment,0);eq(text.Slot.Padding.Right,12)
+-- A dofile replacement can inherit a scroll record made by the previous build.
+-- That build left the original alignment/translation intact and did not save them.
+record.justification=nil;record.translation=nil
+text.Justification=1;text.RenderTransform.Translation={X=0,Y=4}
+text.value='重力 -5%'
+mod=dofile('FFWTools/src/FFWJokerInfo/Scripts/main.lua');mod.update()
+eq(record.justification,1,'existing records capture the original alignment before changing it')
+eq(record.translation and record.translation.Y,4,'existing records capture the original offset before changing it')
 selectors={};mod.update();eq(root.WidthOverride,340);eq(record.descriptionBox.HeightOverride,340,'changing ownership resizes existing scroll region')
+eq(record.descriptionBox.WidthOverride,250,'Tab uses the wider current-card text region')
 selectors={selector};mod.update();eq(root.WidthOverride,300);eq(record.descriptionBox.HeightOverride,260)
 local beforeScans,beforeReads=scans,reads
 text.value='重力 -5%'
@@ -105,8 +121,14 @@ eq(text.value:find('1.15 → 1.1',1,true)~=nil,true)
 mod.snapshot=noEffect;mod.refreshWidget(card)
 eq(red.Visibility,3,'reuse of a card widget shows no-bonus status again')
 eq(#record.scroll.children,2,'one ordinary and one status text without duplicates')
+selectors={};mod.update()
+-- The existing red widget is reused by a non-acquisition owner and must hide.
+mod.snapshot=noEffect;mod.refreshWidget(card)
+eq(red.Visibility,2,'switching from pickup to held hides the red warning')
+eq(text.value:find('重力系数：0.25',1,true)~=nil,true)
 mod.stop()
 eq(text.value,'重力 -5%');eq(text.Font.Size,19);eq(text.parent,descriptionParent)
 eq(descriptionParent:GetChildAt(2),text,'original child order restored');eq(#descriptionParent.children,3)
 eq(root.WidthOverride,300);eq(root.HeightOverride,450);eq(next(callbacks),nil)
+eq(text.Justification,1);eq(text.RenderTransform.Translation.Y,4,'stop restores original game layout')
 print('joker_inline_layout_test: '..checks..' checks passed')

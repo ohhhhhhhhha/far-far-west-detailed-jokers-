@@ -38,7 +38,7 @@ eq(empty.detail:find('没有',1,true)~=nil,true)
 local capped=I.fromSnapshot({selected={primary='itemLongRanger'},equipped={itemHero={'jokerLightWeight','jokerLightWeight'}},upgrades={},runtime={},
     inputs={heldItemName='itemLongRanger',buffGravity=0}})
 local capText=P.description('jokerLightWeight',capped,'itemHero','equip')
-eq(capText:find('无加成',1,true)~=nil,true)
+eq(capText:find('无加成',1,true),nil,'the acquisition-only warning stays out of the owned equipment menu')
 eq(capText:find('装备后 3 张',1,true),nil,'unavailable equip action must not be presented as an available candidate')
 eq(P.description('jokerLightWeight',capped,'itemHero','pickup'):find('1.15 → 1.1',1,true)~=nil,true,'hall limit does not cap task pickup')
 print('joker_panel_test: '..checks..' checks passed')

@@ -49,9 +49,18 @@ local function fitDescription(widget,text,kind,record)
         end
         cardBox:SetWidthOverride(width);cardBox:SetHeightOverride(kind=='current' and 580 or 500)
     end
+    -- A private-module reload may reuse records made before these fields existed.
+    -- Capture their original values before either layout path changes them.
+    if record.justification==nil then record.justification=I.field(text,'Justification') end
+    if not record.translation then
+        local translation=I.field(I.field(text,'RenderTransform'),'Translation')
+        if translation then record.translation={X=translation.X,Y=translation.Y} end
+    end
     if record.scroll and P.valid(record.scroll) then
         record.descriptionBox:SetWidthOverride(width and width-90 or 300)
         record.descriptionBox:SetHeightOverride(kind=='current' and 340 or 260)
+        text:SetJustification(0)
+        text:SetRenderTranslation({X=0,Y=0})
         return
     end
     -- The original TextBlock stays in the original description area. Its parent
@@ -68,8 +77,15 @@ local function fitDescription(widget,text,kind,record)
     if padding then record.padding={Left=padding.Left,Top=padding.Top,Right=padding.Right,Bottom=padding.Bottom} end
     record.horizontalAlignment=I.field(oldSlot,'HorizontalAlignment')
     record.autoWrap=I.field(text,'AutoWrapText')
-    parent:RemoveChild(text);box:AddChild(scroll);scroll:AddChild(text);parent:AddChild(box)
+    parent:RemoveChild(text);box:AddChild(scroll)
+    local scrollSlot=scroll:AddChild(text)
+    scrollSlot:SetHorizontalAlignment(0)
+    scrollSlot:SetPadding({Left=0,Top=0,Right=12,Bottom=6})
+    local boxSlot=parent:AddChild(box)
+    boxSlot:SetHorizontalAlignment(2)
     text:SetAutoWrapText(true)
+    text:SetJustification(0)
+    text:SetRenderTranslation({X=0,Y=0})
     record.descriptionParent=parent;record.descriptionBox=box;record.scroll=scroll
 end
 local function patch(widget,snapshot,kind)
@@ -340,6 +356,8 @@ function S.stop()
                     if record.padding then slot:SetPadding(record.padding) end
                     if record.horizontalAlignment~=nil then slot:SetHorizontalAlignment(record.horizontalAlignment) end
                     if record.autoWrap~=nil then record.widget:SetAutoWrapText(record.autoWrap) end
+                    if record.justification~=nil then record.widget:SetJustification(record.justification) end
+                    if record.translation then record.widget:SetRenderTranslation(record.translation) end
                 end
                 if record.fontSize then local font=record.widget.Font;font.Size=record.fontSize;record.widget:SetFont(font) end
                 if P.valid(record.cardBox) then

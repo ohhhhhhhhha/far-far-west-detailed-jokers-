@@ -53,10 +53,12 @@ local function noBonus(id,s,kind)
 end
 noBonus('jokerCdrElec',spells)
 local electric=snapshot({'jokerCdrElec'},spellInputs)
-noBonus('jokerCdrElec',electric,'current')
+local electricCurrent,electricStyle=P.description('jokerCdrElec',electric,'itemHero','current')
+eq(electricStyle.noBonus,false);eq(electricCurrent,C.get('jokerCdrElec').description)
 local floor={};for n=1,21 do floor[n]='jokerLightWeight' end
 noBonus('jokerLightWeight',snapshot(floor,{buffGravity=0,heldItemName='itemLongRanger'}))
-noBonus('jokerLightWeight',snapshot(floor,{buffGravity=0,heldItemName='itemLongRanger'}),'current')
+local cappedCurrent,cappedStyle=P.description('jokerLightWeight',snapshot(floor,{buffGravity=0,heldItemName='itemLongRanger'}),'itemHero','current')
+eq(cappedStyle.noBonus,false);eq(cappedCurrent:find('重力系数：0.25',1,true)~=nil,true)
 noBonus('jokerMagicReload',snapshot({'jokerMagicReload'},
     {magazineAmmo=2,magazineMaximum=6,ammoCurrent=20,consumerEquipped=false,magicReloadProc=false}))
 local reactive=snapshot({'jokerHitMe','jokerHitMe','jokerFightOrFlight','jokerFightOrFlight'},

@@ -36,12 +36,55 @@ local function groupsFor(s,id,item)
     for _,g in ipairs(Inventory.groups(s)) do if Inventory.applies(id,g.itemName) then result[#result+1]=g end end
     return result
 end
+-- These rules depend on a consumable resource or a temporary combat state.
+-- If their live values are unchanged, compare a labelled trigger/rate instead
+-- of treating a zero resource as proof that acquiring the ability is useless.
+-- Reuse the verified evaluator; never write these example inputs to the game
+-- or substitute them for F7's live metrics.
+local resourceCases={
+    jokerAllMighty={key='damageBonus',inputs={shield=1},zh='每 1 点护盾的伤害加成',en='Damage bonus per 1 shield point'},
+    jokerCheapSkate={key='flatHealth',inputs={gold=15},zh='每 15 枚任务金币的生命加值',en='Health bonus per 15 mission gold'},
+    jokerEagleLever={key='damageBonus',inputs={consecutiveHits=1},zh='1 层连击时的伤害加成',en='Damage bonus at 1 combo stack'},
+    jokerSpellLash={key='chargeAfterSpell',inputs={lassoCharge=0},zh='从空蓄力条施法后的充能',en='Charge after casting from an empty bar'},
+    jokerStonks={key='jokerChestChance',inputs={chestIsFake=false,chestCanDropContent=true},zh='普通可掉落宝箱的掉卡概率',en='Joker chance in a normal lootable chest'},
+}
+local function conditionalSummary(id,n,inputs)
+    local entry=resourceCases[id]
+    if id=='jokerOverBlast' and inputs.magazineMaximum and inputs.magazineMaximum>=4 then
+        entry={key='extraProjectiles',inputs={magazineAmmo=inputs.magazineMaximum-4},
+            zh='缺少 4 发弹药时的额外弹丸',en='Extra pellets with 4 missing rounds'}
+    elseif id=='jokerRushBlast' and inputs.magazineMaximum then
+        entry={key='zeroSpreadAtShot',inputs={magazineAmmo=inputs.magazineMaximum},
+            zh='发射时缺弹 ≤ 3：零散布',en='Zero spread with at most 3 missing rounds at firing'}
+    elseif id=='jokerStackedLever' then
+        if inputs.magazineMaximum==nil then
+            return {label=L.choose('满足击杀条件时的补弹','Reload on an eligible kill'),
+                value=n==0 and 0 or nil,unit='number',missing=L.choose('该武器弹匣容量','weapon magazine capacity')}
+        end
+        entry={key='roundsOnEligibleKill',inputs={ammoCurrent=2,magazineAmmo=0},
+            zh='备弹 ≥ 2、弹匣空时的击杀补弹',en='Kill reload with reserve ≥ 2 and an empty magazine'}
+    elseif id=='jokerSpeedster' then
+        -- Its verified curve rises 0.4 over 660 effective speed. An extra 3%
+        -- of the 550 base is 16.5, hence 1% per copy before the consumer clamp.
+        return {label=L.choose(inputs.canBeAffectedByPlayerFireRate==false and
+            '每 +3% 有效移速的增伤（未封顶时）' or '每 +3% 有效移速的伤害／攻速加成（未封顶时）',
+            inputs.canBeAffectedByPlayerFireRate==false and 'Damage per +3% effective speed (before saturation)' or
+            'Damage / attack speed per +3% effective speed (before saturation)'),
+            value=n*Effects.curve('C_Joker_Speedster',566.5),unit='percent'}
+    end
+    if not entry then return end
+    local context={};for k,v in pairs(inputs) do context[k]=v end
+    for k,v in pairs(entry.inputs) do context[k]=v end
+    local m=Effects.evaluate(id,n,context).metrics[entry.key]
+    return {label=L.choose(entry.zh,entry.en),value=m.value,unit=m.unit}
+end
 function P.description(id,s,item,kind,original)
     local c=Cards.get(id)
     if not c then return original end
     local r=Effects.rule(id)
     local upgrade=isUpgrade(c)
-    local base=originalDescription(c,original)..P.marker
+    local originalText=originalDescription(c,original)
+    local base=originalText..P.marker
     if r and r.status=='disabled' then
         return base..L.text('当前版本禁用；不提供正常获取或效果预览'),{noBonus=false}
     end
@@ -52,7 +95,17 @@ function P.description(id,s,item,kind,original)
         return a~=b
     end
     local function unknown(m)
-        return m and m.value==nil and (m.missing~=nil or m.potential~=nil)
+        return m and m.value==nil and m.potential==nil and m.missing~=nil
+    end
+    local function displayValue(m)
+        if m.potential~=nil then return m.potential end
+        return m.value
+    end
+    local function displayMetric(m)
+        -- Acquisition/current-card summaries describe the effect when its stated
+        -- condition is met. F7 continues to use the live value via formatMetric.
+        if m.potential==nil then return Effects.formatMetric(m) end
+        return Effects.formatMetric({value=m.potential,unit=m.unit})
     end
     for _,g in ipairs(groups) do
         local label=g.label or g.itemName
@@ -61,7 +114,9 @@ function P.description(id,s,item,kind,original)
             local equipped=(g.parts[c.id] or {}).equipped or 0
             local atEquipLimit=not upgrade and kind=='equip' and equipped>=c.maxAvailable
             local current=kind=='current'
-            local increment=current and -math.min(1,Effects.count(g.counts,c.id)) or 1
+            -- A held stack remains useful at a cap even if removing just one
+            -- copy would not lower its total. Compare with having none of it.
+            local increment=current and -Effects.count(g.counts,c.id) or 1
             local inputs
             if current then
                 inputs={};for k,v in pairs(g.inputs) do inputs[k]=v end
@@ -73,7 +128,11 @@ function P.description(id,s,item,kind,original)
             for key in pairs(p.current.metrics) do
                 local gravityDetail=p.current.metrics.finalGravityScale and
                     (key=='gravityScaleDelta' or key=='runtimeGravityScale' or key=='gravityFloorCardCount')
-                if not gravityDetail and not p.current.metrics[key].detailOnly and key~='equippedSameElementSpells' then keys[#keys+1]=key end
+                -- The next incoming hit does not exist yet. Its raw event total
+                -- belongs in F7; the compact card can state the exact flat bonus
+                -- and formula without filling its scroll area with missing data.
+                local futureRetaliation=c.id=='jokerPricklyPear' and key=='reflectDamage'
+                if not gravityDetail and not futureRetaliation and not p.current.metrics[key].detailOnly and key~='equippedSameElementSpells' then keys[#keys+1]=key end
             end
             local priority={finalGravityScale=1,gravityReduction=2}
             table.sort(keys,function(a,b)
@@ -85,23 +144,40 @@ function P.description(id,s,item,kind,original)
                 if #keys==0 and p.status~='verified' then details[1]='效果规则待核实' end
                 for _,key in ipairs(keys) do
                     local m,nextMetric=p.current.metrics[key],p.after.metrics[key]
-                    local changed=nextMetric and differs(m.value,nextMetric.value)
+                    local changed=nextMetric and differs(displayValue(m),displayValue(nextMetric))
                     local missing=unknown(m) or unknown(nextMetric)
                     if changed or missing then
                         local metricLabel=({finalGravityScale='重力系数',gravityReduction='相比基础重力'})[key]
                             or (L.language()=='zh' and m.label:gsub('^本卡','') or m.label)
-                        local detail=metricLabel..'：'..Effects.formatMetric(m)
+                        local detail=metricLabel..'：'..displayMetric(m)
                         -- Tab shows current values; its removal comparison is only
                         -- a relevance filter, never another acquisition preview.
-                        if not current and nextMetric and (changed or differs(m.potential,nextMetric.potential)) then
-                            detail=detail..' → '..Effects.formatMetric(nextMetric)
+                        if not current and nextMetric and changed then
+                            detail=detail..' → '..displayMetric(nextMetric)
                         end
-                        if m.condition and key~='finalGravityScale' then detail=detail..'（'..m.condition..'）' end
+                        if m.condition and key~='finalGravityScale' then
+                            local condition=m.condition
+                            if c.id=='jokerBouncingBall' then condition=L.choose('离地时','While airborne') end
+                            detail=detail..'\n（'..condition..'）'
+                        end
                         details[#details+1]=detail
+                    end
+                end
+                if #details==0 then
+                    local now=conditionalSummary(c.id,p.currentCount,inputs)
+                    local after=conditionalSummary(c.id,p.afterCount,inputs)
+                    if now and after and (differs(now.value,after.value) or unknown(now) or unknown(after)) then
+                        local detail=now.label..'：'..Effects.formatMetric(now)
+                        if not current then detail=detail..' → '..Effects.formatMetric(after) end
+                        details[1]=detail
                     end
                 end
             end
             if #details>0 then
+                if c.id=='jokerPricklyPear' then
+                    details[#details+1]=L.choose('反伤＝减伤后伤害＋附加值','Retaliation = post-mitigation damage + bonus')
+                    details[#details+1]=L.choose('敌人造成生命伤害时触发','Triggers when an enemy damages your health')
+                end
                 if #groups>1 then lines[#lines+1]=label..'：' end
                 local elementCount=p.current.metrics.equippedSameElementSpells
                 if elementCount then lines[#lines+1]=elementCount.label..'：'..Effects.formatMetric(elementCount) end
@@ -109,7 +185,10 @@ function P.description(id,s,item,kind,original)
             end
         end
     end
-    if #lines==0 then return base..L.text('无加成'),{noBonus=true,plainText=base:sub(1,-2)} end
+    if #lines==0 then
+        if kind=='pickup' then return base..L.text('无加成'),{noBonus=true,plainText=base:sub(1,-2)} end
+        return originalText,{noBonus=false}
+    end
     return base..L.text(table.concat(lines,'\n')),{noBonus=false}
 end
 function P.entries(s)
