@@ -1,5 +1,5 @@
 {
-  "version": "0.3.0-beta.5",
+  "version": "0.3.0-beta.6",
   "channel": "beta",
   "game": "Far Far West",
   "dataBaseline": "0.3.0.7",
@@ -8,12 +8,20 @@
     "en"
   ],
   "platform": "Windows x64",
-  "ue4ssBuild": "1181",
-  "ue4ssSourceCommit": "8333063595fa3c49ad307f3b0f732accbb760d25",
-  "ue4ssDllSha256": "ce5e3c46a920cc00b2817ac61e438c9162830290379d0b5b9c4dfc2b29459290",
-  "runtimeValidation": "Offline local/host/guest lifecycle, delayed callback, old-version migration and DPI/layout regression coverage. Native B07/B08 crash causation and full in-game multiplayer/pixel acceptance remain unverified.",
+  "ue4ssBuild": "1183",
+  "ue4ssDllSha256": "c273e7228687b647226fd63d7ca65888d313ece6be18996ec1320d00a5efe1f8",
+  "runtimeValidation": "Card Lua is byte-identical to beta.5, whose offline regressions passed and single-player F7/mouse/title-return checks were confirmed by the user. This version changes packaging and installation documentation. Real LAN/IP-direct-connect and native-crash investigation remain separate.",
   "framework": "UE4SS",
   "installation": "manual-copy",
   "id": "FFWJokerInfo",
-  "compatibilitySignature": "ProcessLocalScriptFunction"
+  "frameworkFilesBundled": false,
+  "frameworkDependency": {
+    "name": "UE4SS for FarFarWest",
+    "source": "Nexus Mods",
+    "url": "https://www.nexusmods.com/farfarwest/mods/2",
+    "version": "3.0.1.1183",
+    "fileId": 242,
+    "archiveSha256": "87c1d83576e43324c2310f8a7fd3961d71dcab07d75f4b1fbf3bb0c2c226b375",
+    "targetRelativeToGameRoot": "FarFarWest/Binaries/Win64"
+  }
 }

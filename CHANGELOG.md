@@ -1,5 +1,15 @@
 # Changes / 更新记录
 
+## 0.3.0-beta.6 — Nexus content packaging
+
+- Remove the framework-signature payload from GameRoot. Obtain the complete game adaptation from Nexus 2, version 3.0.1.1183 (file 242).
+- Keep all 14 card files byte-identical to beta.5; no card rules, controls or UI behavior change.
+- Document the distinct framework/content destinations, Data backup and migration, activation, controls, troubleshooting, disable and rollback in both languages.
+- Verify the archive through the shared Nexus contract, preserving all 24 framework files and existing component Data. Earlier release assets remain unchanged.
+
+移除内容包中的框架签名，采用 Nexus 2 专用框架；14 个卡牌文件与 beta.5 一致。补齐完整双语安装与回滚指南，并通过共享安装契约检查框架文件和 Data 保留。旧版本附件不变。
+
+
 ## 0.3.0-beta.5 — 2026-10-29 candidate
 
 - Guard queued input and native UI refresh against world/controller/character changes and replaced module instances.

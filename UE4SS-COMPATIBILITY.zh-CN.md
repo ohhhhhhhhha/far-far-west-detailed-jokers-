@@ -1,19 +1,27 @@
-# Far Far West 的 UE4SS 启动签名
+# 框架依赖 — Nexus 游戏专用包
 
-三个组件共用同一份 ProcessLocalScriptFunction.lua。运行包将它放在 `GameRoot/FarFarWest/Binaries/Win64/ue4ss/UE4SS_Signatures/`。安装时合并 GameRoot 内容，先安装这份游戏签名，再第一次启动 UE4SS；只装官方框架后直接启动可能命中错误的函数入口。
+FFWJokerInfo 0.3.0-beta.6 是内容 Mod，不包含 UE4SS 加载器、配置、共享辅助库或扫描签名。卡牌 Lua 与 beta.5 相同，变化在安装包和指南。
 
-## 适用范围
+## 玩家下载与目录
 
-本次核验基线是 Far Far West 0.3.0.7、CL 2852、UE 5.8.1 的 Windows x64 版本。本机 UE4SS 1181（83330635）日志已确认此签名被加载。用户报告指出同类签名解决了 1183 的一次启动扫描复现；这不代表统计原生桥已验证 1183 的 ABI。
+使用 [Nexus 2 — UE4SS for FarFarWest](https://www.nexusmods.com/farfarwest/mods/2)，作者 anro / AnroG772。核对基线为游戏 0.3.0.7、Frostburn / UE 5.8 玩家主文件 UE4SS-FarFarWest 3.0.1.1183（文件 ID 242）。普通玩家无需 zDEV 包。
 
-签名按通配字节扫描，每次启动解析实际地址，不包含进程绝对地址、Steam ID、个人路径或机器配置。安装盘符、中文目录和地址随机化无需修改它。其他游戏更新仍需重新验证，不能保证任意版本兼容。
+Steam“浏览本地文件”打开包含 FarFarWest.exe 的游戏根目录。框架归档顶层直接是 dwmapi.dll、ue4ss 和 README.md；将框架内容放到根目录内的 **FarFarWest/Binaries/Win64**，旁边应有 FarFarWest-Win64-Shipping.exe。卡牌内容包的 GameRoot 内部内容则复制到 Steam 打开的游戏根目录，不能把两个目标混用。
 
-本目录不替换 UE4SS.dll、代理 DLL、UE4SS-settings.ini 或 mods.txt。不要把加载器故障、显卡崩溃和失效对象调用混为一种错误。本补丁不声称修复报告 B02、B07 或 B08。
+完整步骤见 [INSTALL.zh-CN.md](INSTALL.zh-CN.md)，含首次安装、旧框架备份迁移、Data 保留、启用、操作、排错、禁用与回滚。
 
-## 更新与回滚
+## 框架文件归属
 
-退出游戏，备份已有的同名签名文件，再复制新版。三个组件的签名字节必须一致；更新其中一个组件即可补齐。移除某个组件时不要删掉仍被其他组件使用的共享签名。
+保留 Nexus 提供的 DLL、UE4SS-settings.ini、mods.txt/mods.json、Mods/shared，以及 FName_Constructor.lua、GNatives.lua、ProcessLocalScriptFunction.lua 三份签名。它们属于配套游戏适配，本组件不会写入这些位置。
 
-## 来源
+beta.5 曾附带一个不同实现的兼容签名；旧附件保持原哈希。使用旧 ZIP 时只能复制 Mods/FFWJokerInfo 子目录。beta.6 不再携带该签名，不需要再额外覆盖 Nexus 文件。
 
-签名来自 [halu103/farfarwest-frostburn-modkit](https://github.com/halu103/farfarwest-frostburn-modkit/blob/main/config/ue4ss/UE4SS_Signatures/ProcessLocalScriptFunction.lua)，按 MIT 许可证分发，完整授权见 `licenses/FrostburnModKit.txt`。[UE4SS 官方签名接口说明](https://docs.ue4ss.com/dev/guides/fixing-compatibility-problems.html)。
+迁移前备份整套框架及各 Mod Data/配置到 Mods 之外。不要将旧全局设置、签名或共享辅助库整份盖回新的 Nexus 安装。数据恢复按各组件版本说明进行；真实存档保持原位。
+
+## 来源与核验范围
+
+[UE4SS 上游源码](https://github.com/UE4SS-RE/RE-UE4SS)保留为来源说明，玩家安装入口采用上述 Nexus 适配包。加载是否成功取决于版本、签名和配置组合。
+
+已检查实际 Nexus ZIP，SHA-256：87c1d83576e43324c2310f8a7fd3961d71dcab07d75f4b1fbf3bb0c2c226b375。归档包含 24 个文件。此摘要对应本次基线，不适用于作者后续更新。
+
+卡牌内容包使用共享安装契约，在隔离目录检查原框架与模拟 Data 保留。此文件检查不代替实机运行、真实局域网/IP直连或全部 Windows 路径编码验证。不需要更改系统区域、驱动或图形设置。

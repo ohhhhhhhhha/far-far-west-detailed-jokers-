@@ -99,19 +99,11 @@
       "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/Scope.lua"
     },
     {
-      "source": "FFWTools/src/RuntimeCompatibility/UE4SS_Signatures/ProcessLocalScriptFunction.lua",
-      "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/UE4SS_Signatures/ProcessLocalScriptFunction.lua"
-    },
-    {
-      "source": "FFWTools/src/RuntimeCompatibility/licenses/FrostburnModKit.txt",
-      "path": "licenses/FrostburnModKit.txt"
-    },
-    {
-      "source": "FFWTools/src/RuntimeCompatibility/README.zh-CN.md",
+      "source": "UE4SS-COMPATIBILITY.zh-CN.md",
       "path": "UE4SS-COMPATIBILITY.zh-CN.md"
     },
     {
-      "source": "FFWTools/src/RuntimeCompatibility/README.en.md",
+      "source": "UE4SS-COMPATIBILITY.en.md",
       "path": "UE4SS-COMPATIBILITY.en.md"
     }
   ],
@@ -139,10 +131,6 @@
     "FFWTools/src/FFWJokerInfo/Scripts/WeaponRules.lua",
     "FFWTools/src/FFWJokerInfo/Scripts/main.lua",
     "FFWTools/src/FFWJokerInfo/enabled.txt",
-    "FFWTools/src/RuntimeCompatibility/README.en.md",
-    "FFWTools/src/RuntimeCompatibility/README.zh-CN.md",
-    "FFWTools/src/RuntimeCompatibility/UE4SS_Signatures/ProcessLocalScriptFunction.lua",
-    "FFWTools/src/RuntimeCompatibility/licenses/FrostburnModKit.txt",
     "FFWTools/tests/Json.lua",
     "FFWTools/tests/bilingual_catalog_test.lua",
     "FFWTools/tests/common_mouse_test.lua",
@@ -176,6 +164,7 @@
     "FFWTools/tests/joker_weapon_completion_test.lua",
     "FFWTools/tests/locale_core_test.lua",
     "FFWTools/tests/overlay_mouse_engine.lua",
+    "FFWTools/tests/runtime_archive_test.mjs",
     "INSTALL.en.md",
     "INSTALL.zh-CN.md",
     "LICENSE",
@@ -184,7 +173,6 @@
     "THIRD-PARTY-NOTICES.md",
     "UE4SS-COMPATIBILITY.en.md",
     "UE4SS-COMPATIBILITY.zh-CN.md",
-    "licenses/FrostburnModKit.txt",
     "licenses/UE4SS.txt",
     "package-manifest.json",
     "package.json",

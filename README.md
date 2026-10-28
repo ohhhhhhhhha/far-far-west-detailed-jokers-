@@ -1,8 +1,8 @@
 # Far Far West — Detailed Joker Effects
 
-[简体中文](README.zh-CN.md) · [Download](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/tag/v0.3.0-beta.5) · [Report an issue](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/issues)
+[简体中文](README.zh-CN.md) · [Download](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/tag/v0.3.0-beta.6) · [Report an issue](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/issues)
 
-**FFWJokerInfo · 0.3.0-beta.5 · UE4SS · Windows x64**
+**FFWJokerInfo · 0.3.0-beta.6 · UE4SS · Windows x64**
 
 Adds calculated effects to the original Joker pickup descriptions and Tab hover details. F7 provides full rules and live readings. Chinese and English follow the game language.
 
@@ -23,14 +23,16 @@ Descriptions are left-aligned, wrap in a bounded area and can be scrolled. For e
 
 ## Install or update
 
-Baseline: Far Far West 0.3.0.7 and UE4SS build 1181. Install a compatible [official UE4SS build](https://github.com/UE4SS-RE/RE-UE4SS) separately, then copy the included game-specific signature **before the first launch**. See [compatibility scope](UE4SS-COMPATIBILITY.en.md).
+beta.6 is a content-only package: it no longer bundles a framework signature. Card Lua matches beta.5. Use the [Nexus 2 game-specific UE4SS player package](https://www.nexusmods.com/farfarwest/mods/2), checked as Main file UE4SS-FarFarWest 3.0.1.1183, file ID 242.
 
-1. Fully exit the game and download [FFWJokerInfo-0.3.0-beta.5.zip](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/download/v0.3.0-beta.5/FFWJokerInfo-0.3.0-beta.5.zip).
-2. Extract the ZIP outside the game folder.
-3. Copy the contents of GameRoot into the game folder opened through Steam → Manage → Browse local files, replacing this mod's old files.
-4. Restart the game. Returning to the title screen does not reload Lua modules.
+1. Fully exit. Before migrating an old framework, back up its complete installation and verify every mod’s Data/settings are preserved outside the active Mods directory.
+2. Steam → Manage → Browse local files opens the game root containing FarFarWest.exe. Install the Nexus framework inside **FarFarWest/Binaries/Win64**, beside FarFarWest-Win64-Shipping.exe.
+3. Extract the card runtime ZIP and merge the **contents inside GameRoot** into the game root from step 2. Do not copy GameRoot itself or put the content archive’s whole structure into the inner Win64 directory.
+4. Check ue4ss/Mods/FFWJokerInfo/enabled.txt and Scripts/main.lua, fully restart, enter the lobby and press F7.
 
-No terminal or installer script is required. See [installation, update and removal instructions](INSTALL.en.md).
+This package installs only 14 card files and preserves Nexus’s DLLs, configuration, shared helpers and complete signature set, as well as existing Data. The older beta.5 archive still has a compatibility signature: copy only its Mods/FFWJokerInfo subtree if using that old file. Previously published assets are unchanged.
+
+No terminal or batch script is needed. The [full guide](INSTALL.en.md) covers the exact tree, Data backup, migration, activation, controls, updates, diagnostics, disable and rollback. See also [framework dependency details](UE4SS-COMPATIBILITY.en.md).
 
 ## Controls
 
@@ -40,7 +42,7 @@ F7 opens or closes full details. Use the mouse to select, page and close; the wh
 
 This repository and its downloads contain only Detailed Joker Effects and its dependencies. It displays information without changing inventory, progression or combat. Spawning, trainer features and combat statistics are separate components.
 
-Lua source and regression tests are under FFWTools. The catalog audit covers 183 card/upgrade entries, 28 retained curves and 27,600 description scenarios. Lifecycle/host/guest/DPI behavior has offline regression coverage; full multiplayer travel and actual Slate pixel display still need in-game acceptance. These changes do not establish the cause or resolution of native access violations B07/B08. See [development notes](DEVELOPMENT.md) and [changes](CHANGELOG.md).
+Lua source and regression tests are under FFWTools. The catalog audit covers 183 card/upgrade entries, 28 retained curves and 27,600 description scenarios. The latest user report confirms this round of single-player F7, mouse and return-to-title checks. Host/guest/DPI models have offline coverage; actual LAN/IP-direct-connect multiplayer acceptance is still tracked separately. Native-crash investigation remains separate. See [development notes](DEVELOPMENT.md) and [changes](CHANGELOG.md).
 
 ## Support and license
 
