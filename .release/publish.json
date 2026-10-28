@@ -1,0 +1,36 @@
+{
+  "tag": "v0.3.0-beta.6",
+  "targetCommit": "82eabb38d1328019d8c9fb52a030e974d427cf99",
+  "title": "Detailed Joker Effects 0.3.0-beta.6",
+  "body": "Packaging and installation-guide update. Card behavior is unchanged: all 14 installed files match beta.5.\n\n- Remove the framework-signature payload. Use the Nexus 2 Frostburn player framework, checked as UE4SS-FarFarWest 3.0.1.1183 (file 242).\n- Preserve the Nexus loader, configuration, helpers and complete signature set, plus existing Mod Data.\n- Include full English/Chinese installation, migration, controls, troubleshooting, disable and rollback instructions.\n\n**Install:** fully exit the game. Steam → Manage → Browse local files opens the game root containing FarFarWest.exe. Install the [Nexus 2 framework](https://www.nexusmods.com/farfarwest/mods/2) into its FarFarWest/Binaries/Win64 directory beside FarFarWest-Win64-Shipping.exe. Extract the runtime ZIP, then merge the contents inside GameRoot into the Steam-opened game root. Check Mods/FFWJokerInfo/enabled.txt and Scripts/main.lua, restart and press F7 in the lobby. Back up every mod's Data/settings before migrating an older framework.\n\n[Complete English installation guide](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/blob/main/INSTALL.en.md) · [完整中文安装指南](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/blob/main/INSTALL.zh-CN.md)\n\n**Validation:** the shared Nexus archive contract preserved all 24 framework files and synthetic existing Data. ZIP CRC, file allowlists, source equality, checksums, 38 relative documentation links and privacy checks passed. This packaging revision reuses beta.5's Lua regression evidence because its installed files are unchanged. Single-player F7/mouse/title-return checks were confirmed; actual LAN/IP-direct-connect and native-crash investigation remain separate.\n\n**Rollback:** older releases remain available with their original bytes. The beta.5 archive includes an older compatibility signature; with Nexus, install only its Mods/FFWJokerInfo subtree instead of merging its entire GameRoot.\n\nbeta.6 调整打包与安装指南，14 个卡牌运行文件与 beta.5 完全一致。框架依赖改为 Nexus 2 的 Frostburn 专用包，内容包不再附带框架签名。先备份旧框架与各 Mod 的 Data/配置，再按双语指南安装。Nexus 框架文件放入内部 FarFarWest/Binaries/Win64；卡牌 GameRoot 内的内容合并到 Steam 打开的游戏根目录。旧版附件保留回退，公开包不含存档、日志、转储或玩家数据。\n",
+  "assets": [
+    {
+      "name": "FFWJokerInfo-0.3.0-beta.6.zip",
+      "blob": "93fcd1575b037da4714321ce158f87d9c5e7f4cd",
+      "bytes": 160609,
+      "sha256": "a71a6a621b4fc7331532844bcd65bf1f3349048101b36e29a7529609eabf8652",
+      "contentType": "application/zip"
+    },
+    {
+      "name": "FFWJokerInfo-source-0.3.0-beta.6.zip",
+      "blob": "e8ccaca884a6e3215f4eb9f0890de99b93de371e",
+      "bytes": 233157,
+      "sha256": "23af733116108855da9b76282135e8454da3e11f34d2e4f47c252093c798a5bb",
+      "contentType": "application/zip"
+    },
+    {
+      "name": "release-manifest.json",
+      "blob": "f18d277f23a11c123f72b4036c06714b048106c9",
+      "bytes": 522,
+      "sha256": "65e0666cfa134b831f7c7df56132b9992e0d8f57937d3c19cb29945913667785",
+      "contentType": "application/json"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "blob": "56bf84b8fa166bf9f4221f9201d0774950bce91f",
+      "bytes": 199,
+      "sha256": "729484740794e1f6e5fc101b689cf66e30c1de1b0ff807ce84bef68265b153db",
+      "contentType": "text/plain"
+    }
+  ]
+}
