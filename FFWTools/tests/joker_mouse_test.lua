@@ -1,13 +1,13 @@
 local checks=0
 local function eq(a,b,message) checks=checks+1;assert(a==b,(message or '')..' expected '..tostring(b)..', got '..tostring(a)) end
-local e=dofile('FFWTools/tests/overlay_mouse_engine.lua').install()
+local e=dofile('FFWTools/tests/joker_engine.lua').install()
 local keys,loops={},{}
 Key={F2=2,F4=4,F5=5,F6=6,F7=7,F8=8};ModifierKey={SHIFT=16}
 RegisterKeyBind=function(key,modifier,fn) keys[fn and key..':shift' or key]=fn or modifier end
 LoopInGameThreadWithDelay=function(_,fn) loops[#loops+1]=fn end
 ExecuteInGameThread=function(fn) fn() end
 FindAllOf=function() return {} end
-package.preload.UEHelpers=function() return {GetPlayerController=function() return e.controller end} end
+package.preload.UEHelpers=function() return e.helpers end
 local mod=dofile('FFWTools/src/FFWJokerInfo/Scripts/main.lua')
 local cards={}
 for _,card in ipairs(mod.Cards.all()) do
@@ -42,11 +42,14 @@ eq(view.pageLabel.text,'Page 2 / 2')
 e.click(view.mouse.buttons.close.button);eq(mod.visible,false);eq(e.controller.bShowMouseCursor,false)
 eq(view.widget.Visibility,2);e.click(view.mouse.buttons.previous.button);eq(mod.index,12,'hidden native events cannot navigate')
 keys[7]();local old=e.controller;e.newController(false);mod.update()
-eq(old.bShowMouseCursor,false,'travel releases the previous controller')
-eq(view.widget.onScreen,false);eq(mod.view~=view,true)
-eq(e.controller.bShowMouseCursor,true,'explicitly visible overlay follows the new controller')
+eq(old.bShowMouseCursor,true,'retired controller is not called just to change its cursor flag')
+eq(view.disposed,true);eq(mod.view,nil);eq(mod.visible,false,'travel closes the retired overlay')
+eq(e.controller.bShowMouseCursor,false,'new controller keeps its native input until F7 is reopened')
+keys[7]();eq(e.controller.bShowMouseCursor,true)
 local travelView=mod.view;e.controller.world=e.object('World');mod.update()
-eq(mod.view~=travelView,true,'same-controller world travel rebuilds the input owner')
+eq(mod.view,nil,'mixed-world pawn/state prevent premature panel rebuild')
+e.controller.Pawn.world=e.controller.world;e.controller.PlayerState.world=e.controller.world
+mod.update();keys[7]();eq(mod.view~=travelView,true,'same-controller world travel can create a fresh input owner')
 keys[8]();eq(mod.visible,false);eq(e.controller.bShowMouseCursor,false,'F8 switching releases F7')
 mod.stop();e.restore()
 print('joker_mouse_test: '..checks..' checks passed')

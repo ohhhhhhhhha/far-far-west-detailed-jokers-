@@ -1,10 +1,14 @@
 # Far Far West — 更详细的奇术卡效果
 
-[English](README.md) · [下载](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/tag/v0.3.0-beta.4) · [反馈问题](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/issues)
+[English](README.md) · [下载](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/tag/v0.3.0-beta.5) · [反馈问题](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/issues)
 
-**FFWJokerInfo · 0.3.0-beta.4 · UE4SS · Windows x64**
+**FFWJokerInfo · 0.3.0-beta.5 · UE4SS · Windows x64**
 
 在原版奇术卡获得界面和 Tab 悬停详情中追加计算后的效果。F7 提供完整规则和实时读数，中英文跟随游戏语言切换。
+
+## 生命周期与显示修复
+
+切换世界、本地控制器或角色上下文时关闭 F7；加载完成后重新按 F7 创建面板。旧世界或旧模块实例中排队的操作会被丢弃。短暂无角色时保留同世界的原描述恢复记录。列表保持单行，选中不再改变文字宽度，并按视口和 DPI 调整每页条目数。
 
 ## 卡面显示规则
 
@@ -19,9 +23,9 @@
 
 ## 安装与更新
 
-验证基线为游戏 0.3.0.7、UE4SS build 1181。请先独立安装兼容的 [UE4SS](https://github.com/UE4SS-RE/RE-UE4SS)。
+验证基线为游戏 0.3.0.7、UE4SS build 1181。请先安装兼容的[官方 UE4SS](https://github.com/UE4SS-RE/RE-UE4SS)，再复制随包游戏签名，**完成后才首次启动游戏**。详见[兼容性范围](UE4SS-COMPATIBILITY.zh-CN.md)。
 
-1. 完全退出游戏，下载 [FFWJokerInfo-0.3.0-beta.4.zip](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/download/v0.3.0-beta.4/FFWJokerInfo-0.3.0-beta.4.zip)。
+1. 完全退出游戏，下载 [FFWJokerInfo-0.3.0-beta.5.zip](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/download/v0.3.0-beta.5/FFWJokerInfo-0.3.0-beta.5.zip)。
 2. 在游戏目录之外解压。
 3. 在 Steam → 管理 → 浏览本地文件打开游戏目录，将 GameRoot 内的内容复制进去，覆盖本 Mod 的旧文件。
 4. 重新启动游戏；仅回到标题界面不会重新加载 Lua 模块。
@@ -36,7 +40,7 @@ F7 开关完整详情。鼠标可以选择、翻页和关闭，滚轮滚动详�
 
 本仓库和下载包仅包含奇术卡说明组件及所需依赖，只读取并显示信息。刷卡、修改器、战斗统计属于其他独立组件。
 
-源码和回归测试位于 FFWTools。审查覆盖 183 条卡牌／升级数据、28 条保留曲线，以及 27,600 组描述场景。最新逻辑和排版改动已有离线回归验证；不代表所有组合或最新排版均已逐一实机确认。详见[开发说明](DEVELOPMENT.md)和[更新记录](CHANGELOG.md)。
+源码和回归测试位于 FFWTools。审查覆盖 183 条卡牌／升级数据、28 条保留曲线，以及 27,600 组描述场景。生命周期、主机／客机和 DPI 行为已有离线回归验证；完整联机切图与 Slate 实际像素仍待实机验收。这些改动不能证明原生访问冲突 B07/B08 的原因或修复结果。详见[开发说明](DEVELOPMENT.md)和[更新记录](CHANGELOG.md)。
 
 ## 反馈与许可
 

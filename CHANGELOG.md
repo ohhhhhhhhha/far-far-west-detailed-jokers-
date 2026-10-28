@@ -1,5 +1,16 @@
 # Changes / 更新记录
 
+## 0.3.0-beta.5 — 2026-10-29 candidate
+
+- Guard queued input and native UI refresh against world/controller/character changes and replaced module instances.
+- Retire old-world views without calling their native widgets; clean surviving same-world UI and preserve description restoration across possession gaps.
+- Reset reactive card snapshots on context changes and select the local controller in host/guest scenarios.
+- Keep F7 button text on one line, use native ellipsis, remove width-changing selection markers and adapt pagination to viewport/DPI.
+- Include the shared ProcessLocalScriptFunction signature and its MIT attribution for fresh installations.
+- Preserve beta.4 effect calculations and full F7 rules. Native AV causation remains unproven; multiplayer/pixel acceptance is pending.
+
+修复旧世界回调和控件清理、短暂无角色及旧版重载边界；调整 F7 单行文字与自适应分页，并随包提供首次启动所需的共享签名。保持 beta.4 条件加成和完整规则。原生 AV 不能据离线测试宣称已解决。
+
 ## 0.3.0-beta.4 — 2026-10-27
 
 - Fix conditional effects being reported as No bonus while their trigger is inactive, including airborne damage.

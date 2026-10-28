@@ -1,28 +1,26 @@
-# Install, update and remove — Detailed Joker Effects
+# Installation, updates and removal
 
-Requires Windows x64 and a working UE4SS installation for Far Far West. Tested baseline: game 0.3.0.7 / UE4SS build 1181. UE4SS is not bundled.
+## First installation
 
-## Install
+1. Fully exit the game. Use Steam → Manage → Browse local files to find its directory.
+2. Install a compatible official UE4SS distribution separately. This package does not replace loader DLLs or configuration.
+3. Extract this package and merge the contents of GameRoot into the game directory. The scan override must be at FarFarWest/Binaries/Win64/ue4ss/UE4SS_Signatures/ProcessLocalScriptFunction.lua; the card component belongs under Mods/FFWJokerInfo beside that directory.
+4. **Install both the framework and this game's signature before the first launch.** Open F7 in the lobby. After travel, press F7 again to rebuild the panel.
 
-1. Exit the game. In Steam, choose Manage → Browse local files.
-2. Extract the runtime ZIP outside that directory.
-3. Copy the contents of GameRoot into the game directory, merging folders.
-4. Press F7 in the game to open full details.
+No terminal or batch script is needed. Preserve existing UE4SS-settings.ini, mods.txt, player Data and saves. The component includes enabled.txt; follow the activation rules of the official framework build being used.
 
-The Lua entry must be at FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/main.lua. The included FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/enabled.txt enables this component. No command, installation script or replacement mods.txt is needed.
+## Updating
 
-For a custom UE4SS working directory, copy the FFWJokerInfo mod folder to its actual Mods directory.
+Exit the game, back up FFWJokerInfo and the existing signature, then merge the new GameRoot. Fully restart; returning to the title screen does not reload scripts. An old Scripts/Spawner.lua may be removed because spawning moved to the separate trainer.
 
-## Update
+## Displays and paths
 
-Close the game. Back up the old FFWJokerInfo folder outside Mods. Remove only its Scripts subfolder, then copy the new GameRoot contents. Preserve Data and other custom files. This clears removed scripts from earlier versions without replacing other mods or global settings.
+Panel geometry uses the game viewport and DPI. Common resolutions/scales have model coverage; actual font pixels still need local acceptance.
 
-## Disable or remove
+Package checks include real Node extraction into Chinese/space-containing paths and a Lua virtual filesystem. UE4SS 1181's Lua loader uses narrow fopen, so these checks do not prove non-ASCII loading under every Windows system code page. If logs report script-path loading errors, use Steam Settings → Storage to add an ASCII-only library path and Steam's Move installation feature to test there. Do not change the system locale, registry or global Lua locale.
 
-Move enabled.txt out of the FFWJokerInfo folder. If mods.txt already contains a FFWJokerInfo entry, change that entry to 0 as well: enabled.txt bypasses mods.txt. To remove the component, remove its Scripts subfolder after disabling it.
+## Removal and rollback
 
-## References
+Exit the game and remove or move Mods/FFWJokerInfo. Keep the shared signature if another mod still needs it. Roll back only this component and its backed-up signature, preserving other mods, Data and official loader settings.
 
-- [UE4SS installation](https://docs.ue4ss.com/dev/installation-guide.html)
-- [Lua mod entry layout](https://docs.ue4ss.com/guides/creating-a-lua-mod.html)
-- [Activation marker and load ordering](https://docs.ue4ss.com/guides/installing-a-c%2B%2B-mod.html)
+See [UE4SS compatibility scope](UE4SS-COMPATIBILITY.en.md).

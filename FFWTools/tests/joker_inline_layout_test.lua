@@ -1,9 +1,10 @@
 -- Models only the UMG calls used for retaining the actual description widget.
 local checks=0
+local world={IsValid=function() return true end,GetFullName=function() return 'World /Game/Levels/L_Lobby.L_Lobby' end,GetAddress=function() return 1 end}
 local function eq(a,b,m) checks=checks+1;assert(a==b,(m or '')..' expected '..tostring(b)..', got '..tostring(a)) end
 local function obj(name)
     return {IsValid=function() return true end,GetFullName=function() return name end,IsVisible=function() return true end,
-        GetAddress=function() return name end}
+        GetAddress=function() return name end,GetWorld=function() return world end}
 end
 local function panel(name)
     local p=obj(name);p.children={}
@@ -67,9 +68,14 @@ local progress={selectedItemA_207_DB75D0B645F36A6C80EA10BC4BCAA457='itemLongRang
     itemsUpgrades_216_1E448EF04C663CC03DC815A885A3CB74=collection({})}
 local pawn={buffGravity=0,CharacterMovement={GravityScale=1.15},AC_PlayerItems={equipedItem={itemName='itemLongRanger'}}}
 local ps={AC_PlayerStateJoker={playerLocalJokers=collection({})}}
+for key,value in pairs(obj('Pawn Local')) do pawn[key]=value end
+for key,value in pairs(obj('PlayerState Local')) do ps[key]=value end
+local controller=obj('PlayerController Local');controller.Pawn=pawn;controller.PlayerState=ps
+controller.IsLocalPlayerController=function() return true end
+local instance=obj('GameInstance Local');instance.playerProgress=progress
 package.preload.UEHelpers=function() return {
-    GetPlayerController=function() reads=reads+1;return {Pawn=pawn,PlayerState=ps} end,
-    GetGameInstance=function() return {playerProgress=progress} end} end
+    GetPlayerController=function() reads=reads+1;return controller end,
+    GetGameInstance=function() return instance end} end
 local mod=dofile('FFWTools/src/FFWJokerInfo/Scripts/main.lua');mod.update()
 eq(mod.errors,0);eq(root.WidthOverride,300,'three candidates keep original width');eq(root.HeightOverride,500)
 eq(text.parent:GetFullName(),'/Script/UMG.ScrollBox','same original TextBlock is retained inside ScrollBox')
@@ -91,11 +97,12 @@ eq(record.translation and record.translation.Y,4,'existing records capture the o
 selectors={};mod.update();eq(root.WidthOverride,340);eq(record.descriptionBox.HeightOverride,340,'changing ownership resizes existing scroll region')
 eq(record.descriptionBox.WidthOverride,250,'Tab uses the wider current-card text region')
 selectors={selector};mod.update();eq(root.WidthOverride,300);eq(record.descriptionBox.HeightOverride,260)
-local beforeScans,beforeReads=scans,reads
+local beforeScans,beforeReads,beforeSnapshot=scans,reads,mod.snapshot
 text.value='重力 -5%'
 callbacks['/Game/Interfaces/Tweaks/UI_JokerCard_InGame.UI_JokerCard_InGame_C:F_Refresh']({get=function() return card end})
 eq(mod.errors,0,'nested card refresh must dispatch by its own class')
-eq(scans,beforeScans,'construct/refresh callback must not scan all objects');eq(reads,beforeReads,'callback reuses 1s snapshot')
+eq(reads>beforeReads,true,'callback rechecks the live local owner before touching a widget')
+eq(mod.snapshot,beforeSnapshot,'hook reuses the inventory snapshot after rechecking the live owner')
 eq(text.value:find('1.15 → 1.1',1,true)~=nil,true,'game refreshing original text is patched immediately')
 local building=obj('UI_SelectableJoker_C /Engine/Transient.UI_SelectableJoker_C_3')
 callbacks['/Game/Interfaces/Tweaks/UI_SelectableJoker.UI_SelectableJoker_C:Construct']({get=function() return building end})

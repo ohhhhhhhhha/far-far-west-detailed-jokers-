@@ -93,6 +93,26 @@
     {
       "source": "release.json",
       "path": "release.json"
+    },
+    {
+      "source": "FFWTools/src/FFWJokerInfo/Scripts/Scope.lua",
+      "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/Scope.lua"
+    },
+    {
+      "source": "FFWTools/src/RuntimeCompatibility/UE4SS_Signatures/ProcessLocalScriptFunction.lua",
+      "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/UE4SS_Signatures/ProcessLocalScriptFunction.lua"
+    },
+    {
+      "source": "FFWTools/src/RuntimeCompatibility/licenses/FrostburnModKit.txt",
+      "path": "licenses/FrostburnModKit.txt"
+    },
+    {
+      "source": "FFWTools/src/RuntimeCompatibility/README.zh-CN.md",
+      "path": "UE4SS-COMPATIBILITY.zh-CN.md"
+    },
+    {
+      "source": "FFWTools/src/RuntimeCompatibility/README.en.md",
+      "path": "UE4SS-COMPATIBILITY.en.md"
     }
   ],
   "directories": [],
@@ -114,10 +134,15 @@
     "FFWTools/src/FFWJokerInfo/Scripts/Locale.lua",
     "FFWTools/src/FFWJokerInfo/Scripts/MousePanel.lua",
     "FFWTools/src/FFWJokerInfo/Scripts/Panel.lua",
+    "FFWTools/src/FFWJokerInfo/Scripts/Scope.lua",
     "FFWTools/src/FFWJokerInfo/Scripts/UpgradeRules.lua",
     "FFWTools/src/FFWJokerInfo/Scripts/WeaponRules.lua",
     "FFWTools/src/FFWJokerInfo/Scripts/main.lua",
     "FFWTools/src/FFWJokerInfo/enabled.txt",
+    "FFWTools/src/RuntimeCompatibility/README.en.md",
+    "FFWTools/src/RuntimeCompatibility/README.zh-CN.md",
+    "FFWTools/src/RuntimeCompatibility/UE4SS_Signatures/ProcessLocalScriptFunction.lua",
+    "FFWTools/src/RuntimeCompatibility/licenses/FrostburnModKit.txt",
     "FFWTools/tests/Json.lua",
     "FFWTools/tests/bilingual_catalog_test.lua",
     "FFWTools/tests/common_mouse_test.lua",
@@ -126,11 +151,14 @@
     "FFWTools/tests/joker_compact_description_test.lua",
     "FFWTools/tests/joker_conditional_description_test.lua",
     "FFWTools/tests/joker_context_preview_test.lua",
+    "FFWTools/tests/joker_engine.lua",
     "FFWTools/tests/joker_extended_test.lua",
     "FFWTools/tests/joker_gravity_test.lua",
     "FFWTools/tests/joker_hero_completion_test.lua",
     "FFWTools/tests/joker_inline_layout_test.lua",
     "FFWTools/tests/joker_inventory_test.lua",
+    "FFWTools/tests/joker_legacy_reload_test.lua",
+    "FFWTools/tests/joker_lifecycle_test.lua",
     "FFWTools/tests/joker_live_context_test.lua",
     "FFWTools/tests/joker_mouse_test.lua",
     "FFWTools/tests/joker_next_rules_spec.lua",
@@ -140,9 +168,11 @@
     "FFWTools/tests/joker_reload_context_test.lua",
     "FFWTools/tests/joker_rules_test.lua",
     "FFWTools/tests/joker_runtime_test.lua",
+    "FFWTools/tests/joker_scope_test.lua",
     "FFWTools/tests/joker_spell_and_events_test.lua",
     "FFWTools/tests/joker_spell_context_test.lua",
     "FFWTools/tests/joker_upgrade_completion_test.lua",
+    "FFWTools/tests/joker_viewport_test.lua",
     "FFWTools/tests/joker_weapon_completion_test.lua",
     "FFWTools/tests/locale_core_test.lua",
     "FFWTools/tests/overlay_mouse_engine.lua",
@@ -152,6 +182,9 @@
     "README.md",
     "README.zh-CN.md",
     "THIRD-PARTY-NOTICES.md",
+    "UE4SS-COMPATIBILITY.en.md",
+    "UE4SS-COMPATIBILITY.zh-CN.md",
+    "licenses/FrostburnModKit.txt",
     "licenses/UE4SS.txt",
     "package-manifest.json",
     "package.json",

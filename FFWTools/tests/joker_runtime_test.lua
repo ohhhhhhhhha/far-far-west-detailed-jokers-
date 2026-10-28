@@ -1,4 +1,10 @@
 local checks=0
+local world={IsValid=function() return true end,GetFullName=function() return 'World /Game/Levels/L_Lobby.L_Lobby' end,GetAddress=function() return 1 end}
+local function actor(o,name,address)
+    o.IsValid=function() return true end;o.GetFullName=function() return name end
+    o.GetAddress=function() return address end;o.GetWorld=function() return world end
+    return o
+end
 local function eq(a,b,m) checks=checks+1;assert(a==b,(m or '')..' expected '..tostring(b)..', got '..tostring(a)) end
 local keys,loops={},{}
 Key={F1=1,F2=2,F3=3,F4=4,F5=5,F6=6,F7=7,F8=8};ModifierKey={SHIFT=16}
@@ -36,7 +42,14 @@ local progress={
 }
 local ps={AC_PlayerStateJoker={playerLocalJokers=collection({})}}
 local pawn={buffGravity=0,CharacterMovement={GravityScale=1.15},AC_PlayerItems={equipedItem={itemName='itemQuadCylinder'}}}
-package.preload.UEHelpers=function() return {GetPlayerController=function() return {PlayerState=ps,Pawn=pawn} end,GetGameInstance=function() return {playerProgress=progress} end} end
+actor(ps,'PlayerState Local',2);actor(pawn,'Pawn Local',3)
+local controller=actor({PlayerState=ps,Pawn=pawn},'PlayerController Local',4)
+controller.IsLocalPlayerController=function() return true end
+local instance=actor({playerProgress=progress},'GameInstance Local',5)
+for _,list in pairs(objects) do for _,o in ipairs(list) do
+    o.IsValid=function() return true end;o.GetWorld=function() return world end
+end end
+package.preload.UEHelpers=function() return {GetPlayerController=function() return controller end,GetGameInstance=function() return instance end} end
 -- A sibling mod already owns this generic module name. The bootstrap must not steal it.
 local sentinel={fromOtherMod=true};package.loaded.Panel=sentinel
 local path='FFWTools/src/FFWJokerInfo/Scripts/main.lua'

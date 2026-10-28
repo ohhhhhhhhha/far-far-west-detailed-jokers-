@@ -1,10 +1,14 @@
 # Far Far West — Detailed Joker Effects
 
-[简体中文](README.zh-CN.md) · [Download](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/tag/v0.3.0-beta.4) · [Report an issue](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/issues)
+[简体中文](README.zh-CN.md) · [Download](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/tag/v0.3.0-beta.5) · [Report an issue](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/issues)
 
-**FFWJokerInfo · 0.3.0-beta.4 · UE4SS · Windows x64**
+**FFWJokerInfo · 0.3.0-beta.5 · UE4SS · Windows x64**
 
 Adds calculated effects to the original Joker pickup descriptions and Tab hover details. F7 provides full rules and live readings. Chinese and English follow the game language.
+
+## Lifecycle and display fixes
+
+F7 closes when its world, local controller or character context changes. Press F7 again after loading to create a fresh panel. Queued actions from a retired world or module instance are discarded. A temporary unpossessed state preserves same-world description restoration data. The list uses stable one-line captions and adapts its row count to the viewport and DPI.
 
 ## Card descriptions
 
@@ -19,9 +23,9 @@ Descriptions are left-aligned, wrap in a bounded area and can be scrolled. For e
 
 ## Install or update
 
-Baseline: Far Far West 0.3.0.7 and UE4SS build 1181. Install a compatible [UE4SS build](https://github.com/UE4SS-RE/RE-UE4SS) separately.
+Baseline: Far Far West 0.3.0.7 and UE4SS build 1181. Install a compatible [official UE4SS build](https://github.com/UE4SS-RE/RE-UE4SS) separately, then copy the included game-specific signature **before the first launch**. See [compatibility scope](UE4SS-COMPATIBILITY.en.md).
 
-1. Fully exit the game and download [FFWJokerInfo-0.3.0-beta.4.zip](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/download/v0.3.0-beta.4/FFWJokerInfo-0.3.0-beta.4.zip).
+1. Fully exit the game and download [FFWJokerInfo-0.3.0-beta.5.zip](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/download/v0.3.0-beta.5/FFWJokerInfo-0.3.0-beta.5.zip).
 2. Extract the ZIP outside the game folder.
 3. Copy the contents of GameRoot into the game folder opened through Steam → Manage → Browse local files, replacing this mod's old files.
 4. Restart the game. Returning to the title screen does not reload Lua modules.
@@ -36,7 +40,7 @@ F7 opens or closes full details. Use the mouse to select, page and close; the wh
 
 This repository and its downloads contain only Detailed Joker Effects and its dependencies. It displays information without changing inventory, progression or combat. Spawning, trainer features and combat statistics are separate components.
 
-Lua source and regression tests are under FFWTools. The catalog audit covers 183 card/upgrade entries, 28 retained curves and 27,600 description scenarios. The latest logic and layout changes have offline regression coverage; this is not a claim that every combination or the latest layout has been verified in-game. See [development notes](DEVELOPMENT.md) and [changes](CHANGELOG.md).
+Lua source and regression tests are under FFWTools. The catalog audit covers 183 card/upgrade entries, 28 retained curves and 27,600 description scenarios. Lifecycle/host/guest/DPI behavior has offline regression coverage; full multiplayer travel and actual Slate pixel display still need in-game acceptance. These changes do not establish the cause or resolution of native access violations B07/B08. See [development notes](DEVELOPMENT.md) and [changes](CHANGELOG.md).
 
 ## Support and license
 

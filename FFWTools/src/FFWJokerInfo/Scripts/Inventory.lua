@@ -373,7 +373,9 @@ function I.readObjects(gameInstance,playerState,pawn)
     end
     return snapshot
 end
-function I.read()
+function I.resetContext() hitMeCache={} end
+function I.read(context)
+    if context then return I.readObjects(context.gameInstance,context.playerState,context.pawn) end
     local helpers=require('UEHelpers')
     local controller=helpers.GetPlayerController()
     return I.readObjects(helpers.GetGameInstance(),field(controller,'PlayerState'),field(controller,'Pawn'))

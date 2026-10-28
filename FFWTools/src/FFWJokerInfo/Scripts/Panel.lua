@@ -206,24 +206,26 @@ function P.entries(s)
     end
     return entries
 end
-function P.page(s,index)
+function P.page(s,index,pageSize)
+    pageSize=math.max(1,math.min(10,math.floor(pageSize or 10)))
     local entries=P.entries(s)
     index=math.max(1,math.min(index or 1,math.max(1,#entries)))
-    local page={index=index,count=#entries,entries=entries,rows={},pageNumber=math.floor((index-1)/10)+1,
-        pageCount=math.max(1,math.ceil(#entries/10)),title=L.text('当前奇术卡'),list='',detail=''}
+    local page={index=index,count=#entries,entries=entries,rows={},pageSize=pageSize,pageNumber=math.floor((index-1)/pageSize)+1,
+        pageCount=math.max(1,math.ceil(#entries/pageSize)),title=L.text('当前奇术卡'),list='',detail=''}
     if #entries==0 then
         page.detail=L.text(s.complete and '当前没有已生效的奇术卡或升级。' or '总份数待读取：'..table.concat(s.missing,'、'))
         return page
     end
     local selected=entries[index];page.selected=selected
     local g,c=selected.group,selected.card
-    local start=math.floor((index-1)/10)*10+1
+    local start=math.floor((index-1)/pageSize)*pageSize+1
     local list={}
-    for k=start,math.min(start+9,#entries) do
+    for k=start,math.min(start+pageSize-1,#entries) do
         local e=entries[k]
-        list[#list+1]=(k==index and '▶ ' or '   ')..L.text(e.group.label)..' · '..(L.card(e.card.id,'name') or e.card.name)
+        local caption=L.text(e.group.label)..' · '..(L.card(e.card.id,'name') or e.card.name)
             ..(isUpgrade(e.card) and (' '..e.count..L.text('级')) or (' ×'..e.count))
-        page.rows[#page.rows+1]={index=k,text=list[#list],selected=k==index}
+        list[#list+1]=(k==index and '▶ ' or '   ')..caption
+        page.rows[#page.rows+1]={index=k,text=list[#list],buttonText=caption,selected=k==index}
     end
     page.list=table.concat(list,'\n\n')
     page.title=L.text(g.label)..' · '..(L.card(c.id,'name') or c.name)..'  ['..index..'/'..#entries..']'
@@ -251,6 +253,57 @@ local function valid(o)
     local ok,value=pcall(function() return o and o:IsValid() end);return ok and value
 end
 local function color(r,g,b,a) return {R=r,G=g,B=b,A=a or 1} end
+function P.layout(viewport)
+    local dpi=viewport.dpiScale or 1
+    local screenW,screenH=viewport.width/dpi,viewport.height/dpi
+    local margin=math.max(4,math.min(24,math.floor(math.min(screenW,screenH)*.025)))
+    local w,h=math.min(1080,screenW-margin*2),math.min(680,screenH-margin*2)
+    local compact=w<960 or h<600
+    local pad,gap=compact and 16 or 24,compact and 16 or 30
+    local listWidth=math.min(316,math.floor((w-pad*2-gap)*.32))
+    local top=compact and 124 or 112
+    local navY=h-78;local area=math.max(24,navY-top-10)
+    local rows=math.max(1,math.min(10,math.floor((area+4)/(compact and 40 or 48))))
+    local rowHeight=math.min(44,math.floor((area-(rows-1)*4)/rows))
+    local navWidth=math.floor((listWidth-12)/4)
+    return {width=w,height=h,margin=margin,dpiScale=dpi,compact=compact,pad=pad,gap=gap,
+        listWidth=listWidth,detailX=pad+listWidth+gap,detailWidth=w-(pad+listWidth+gap)-gap,
+        bodyTop=top,detailHeight=math.max(24,h-top-28),navY=navY,navWidth=navWidth,
+        rows=rows,rowHeight=rowHeight,rowGap=4,titleSize=compact and 18 or 26,
+        listSize=compact and 14 or 16,listTextSize=compact and 14 or 17,detailSize=compact and 16 or 18,hintSize=compact and 12 or 16,
+        controlSize=math.min(18,math.max(8,math.floor((navWidth-16)/1.8)))}
+end
+local function viewport(controller)
+    local ok,result=pcall(function()
+        local lib=StaticFindObject('/Script/UMG.WidgetLayoutLibrary'):GetCDO()
+        local size,dpi=lib:GetViewportSize(controller),lib:GetViewportScale(controller)
+        if size.X>0 and size.Y>0 and dpi>0 then return {width=size.X,height=size.Y,dpiScale=dpi} end
+    end)
+    return ok and result or {width=1280,height=800,dpiScale=1}
+end
+function P.refreshLayout(view)
+    local layout=P.layout(viewport(view.getController()))
+    local old=view.layout
+    if old and old.width==layout.width and old.height==layout.height and old.dpiScale==layout.dpiScale then return old end
+    view.layout=layout
+    local function place(widget,x,y,w,h,size)
+        widget.Slot:SetPosition({X=x,Y=y});widget.Slot:SetSize({X=w,Y=h})
+        if size then local f=widget.Font;f.Size=size;widget:SetFont(f) end
+    end
+    local w,h,p=layout.width,layout.height,layout.pad
+    place(view.background,0,0,w,h)
+    place(view.title,p,layout.compact and 10 or 18,w-p*2-102,layout.compact and 60 or 46,layout.titleSize)
+    place(view.hint,p,layout.compact and 76 or 63,w-p*2,layout.compact and 36 or 32,layout.hintSize)
+    place(view.list,p,layout.bodyTop,layout.listWidth,layout.detailHeight,layout.listTextSize)
+    place(view.detailScroll,layout.detailX,layout.bodyTop,layout.detailWidth,layout.detailHeight)
+    local f=view.detail.Font;f.Size=layout.detailSize;view.detail:SetFont(f)
+    place(view.search,p,layout.bodyTop-4,layout.listWidth,40)
+    place(view.pageLabel,p,h-36,layout.listWidth,24,layout.compact and 12 or 14)
+    view.widget:SetDesiredSizeInViewport({X=w,Y=h})
+    -- Position and desired size are logical Slate units; do not divide by DPI twice.
+    view.widget:SetPositionInViewport({X=layout.margin,Y=layout.margin},false)
+    return layout
+end
 function P.setNoBonusText(parent,tree,source,text,visible)
     if visible and not valid(text) then
         assert(valid(parent) and valid(tree),'无加成文字缺少描述容器')
@@ -289,12 +342,15 @@ function P.setSearchInput(view,active)
         view.searchInput=nil
     end
 end
-function P.createView(query,onAction)
-    local controller=require('UEHelpers').GetPlayerController()
+function P.createView(query,onAction,options)
+    options=options or {}
+    local getController=options.getController or require('UEHelpers').GetPlayerController
+    local controller=options.context and options.context.controller or getController()
     local host=StaticFindObject('/Game/Interfaces/UI_Joker_Informations.UI_Joker_Informations_C')
     local library=StaticFindObject('/Script/UMG.WidgetBlueprintLibrary')
     assert(valid(controller) and valid(host) and valid(library),'玩家控制器或 UMG 宿主未加载')
     local widget=library:GetCDO():Create(controller,host,controller)
+    if options.isCurrent and not options.isCurrent() then return end
     assert(valid(widget),'创建奇术卡面板失败')
     widget.bHasScriptImplementedPaint=false;widget.bIsFocusable=true
     local tree=widget.WidgetTree
@@ -321,7 +377,8 @@ function P.createView(query,onAction)
         text:SetAutoWrapText(true)
         return text
     end
-    local view={widget=widget,root=canvas,background=background,
+    local view={widget=widget,root=canvas,background=background,getController=getController,
+        getContext=options.getContext,contextKey=options.context and options.context.ownerKey,
         title=label(24,18,930,46,26),hint=label(24,63,1030,32,16),
         list=label(24,112,316,540,17),detail=label(370,112,680,540,18)}
     -- The same width and position keep the F7 detail layout. The F4 preview
@@ -335,7 +392,7 @@ function P.createView(query,onAction)
     view.detail:SetVisibility(3);view.detailBox:SetVisibility(4)
     -- Lazy loading preserves Panel.description's pure use in the desktop bridge.
     view.mouse=require('MousePanel').new({host=widget,root=canvas,tree=tree,font=font,controller=controller,
-        library=view.library,onAction=onAction})
+        library=view.library,onAction=onAction,getController=getController})
     view.pageLabel=label(24,644,316,24,14)
     local search=StaticConstructObject(StaticFindObject('/Script/UMG.EditableTextBox'),tree)
     assert(valid(search),'创建卡牌搜索框失败')
@@ -349,18 +406,23 @@ function P.createView(query,onAction)
     view.search=place(search,24,108,316,40);search:SetVisibility(2)
     canvas:SetVisibility(4)
     view.hint:SetText(FText(L.text('F7 显示／隐藏   F5 上一项   F6 下一项   每秒刷新；仅显示，不更改装备')))
-    widget:SetDesiredSizeInViewport({X=1080,Y=680})
-    widget:SetPositionInViewport({X=40,Y=40},true)
+    P.refreshLayout(view)
     widget:SetColorAndOpacity(color(1,1,1,0))
     widget:SetVisibility(2)
     widget:AddToViewport(9950)
+    if options.isCurrent and not options.isCurrent() then P.destroyView(view,true);return end
     return view
 end
-function P.render(view,page,visible)
+function P.render(view,page,visible,layout)
+    if not P.isViewCurrent(view) then P.destroyView(view,true);return false end
+    if not visible then P.hideView(view);return true end
     assert(valid(view.widget),'面板已失效')
+    layout=layout or P.refreshLayout(view)
     view.title:SetText(FText(page.title))
-    view.hint:SetText(FText(page.hint or L.choose('点击选卡／翻页；详情区滚轮滚动   F7 开关   F5/F6 选卡   Shift 翻页',
-        'Click cards / pages; scroll details   F7 Toggle   F5/F6 Select   Shift Page')))
+    local hint=layout.compact and L.choose('F7 开关 · F5/F6 选卡 · Shift 翻页','F7 Toggle · F5/F6 Select · Shift Page') or
+        L.choose('点击选卡／翻页；详情区滚轮滚动   F7 开关   F5/F6 选卡   Shift 翻页',
+        'Click cards / pages; scroll details   F7 Toggle   F5/F6 Select   Shift Page')
+    view.hint:SetText(FText(page.hint or hint))
     view.list:SetText(FText(page.list))
     view.detail:SetText(FText(page.plainDetail or page.detail))
     view.noBonusText=P.setNoBonusText(view.detailBox,view.tree,view.detail,view.noBonusText,page.noBonus)
@@ -368,15 +430,16 @@ function P.render(view,page,visible)
     if valid(view.search) then
         view.search:SetHintText(FText(page.inputHint or L.text('搜索卡名 / 英文 ID')))
         view.search:SetVisibility(searching and 0 or 2)
-        view.list.Slot:SetPosition({X=24,Y=page.searchable and 162 or 112})
-        view.list.Slot:SetSize({X=316,Y=page.searchable and 490 or 540})
+        view.list.Slot:SetPosition({X=layout.pad,Y=layout.bodyTop+(page.searchable and 50 or 0)})
+        view.list.Slot:SetSize({X=layout.listWidth,Y=layout.detailHeight-(page.searchable and 50 or 0)})
     end
     view.list:SetVisibility(page.searchable and 3 or 2)
     local controls=not page.searchable
     for index=1,10 do
         local row=(page.rows or {})[index]
-        view.mouse:button('row-'..index,{text=row and row.text or '',action='select',value=row and row.index,
-            selected=row and row.selected,visible=controls and row~=nil,x=24,y=112+(index-1)*48,width=316,height=44,size=16})
+        view.mouse:button('row-'..index,{text=row and (row.buttonText or row.text) or '',action='select',value=row and row.index,
+            selected=row and row.selected,visible=controls and row~=nil and index<=layout.rows,x=layout.pad,
+            y=layout.bodyTop+(index-1)*(layout.rowHeight+layout.rowGap),width=layout.listWidth,height=layout.rowHeight,size=layout.listSize})
     end
     local count=page.count or 0
     for _,control in ipairs({
@@ -387,9 +450,10 @@ function P.render(view,page,visible)
     }) do
         local index=({previousPage=0,previous=1,next=2,nextPage=3})[control[1]]
         view.mouse:button(control[1],{text=control[2],action=control[1],enabled=control[3]==true,visible=controls,
-            x=24+index*80,y=602,width=76,height=34,size=18})
+            x=layout.pad+index*(layout.navWidth+4),y=layout.navY,width=layout.navWidth,height=34,size=layout.controlSize})
     end
-    view.mouse:button('close',{text=L.choose('关闭','Close'),action='close',x=966,y=18,width=90,height=36,size=16})
+    view.mouse:button('close',{text=L.choose('关闭','Close'),action='close',x=layout.width-layout.pad-90,
+        y=layout.compact and 10 or 18,width=90,height=36,size=layout.compact and 14 or 16})
     view.pageLabel:SetText(FText(controls and string.format(L.choose('第 %d / %d 页','Page %d / %d'),page.pageNumber or 1,page.pageCount or 1) or ''))
     local selected=page.selected
     local detailKey=selected and selected.card and ((selected.group and selected.group.itemName or '')..':'..selected.card.id) or page.index
@@ -401,11 +465,65 @@ function P.render(view,page,visible)
     if visible then view.mouse:show(searching and view.search or view.widget) else view.mouse:hide() end
 end
 function P.isViewCurrent(view)
-    return view and view.mouse and view.mouse:isCurrent(require('UEHelpers').GetPlayerController())
+    if not view or view.disposed or not view.mouse then return false end
+    if view.getContext then
+        local context=view.getContext()
+        if not context or context.ownerKey~=view.contextKey then return false end
+        return view.mouse:isCurrent(context.controller)
+    end
+    return view.getController~=nil and view.mouse:isCurrent(view.getController())
 end
-function P.destroyView(view)
-    if view.mouse then view.mouse:dispose() else P.setSearchInput(view,false) end
-    if valid(view.widget) then view.widget:SetVisibility(2);view.widget:RemoveFromParent() end
+function P.hideView(view)
+    if not P.isViewCurrent(view) then P.destroyView(view,true);return false end
+    if view.mouse then view.mouse:hide() else P.setSearchInput(view,false) end
+    local ok=pcall(function() view.widget:SetVisibility(2) end)
+    if not ok then P.destroyView(view,true) end
+    return ok
+end
+function P.destroyView(view,abandon,refreshInput)
+    if not view or view.disposed then return end
+    if abandon==nil then abandon=not P.isViewCurrent(view) end
+    view.disposed=true
+    if view.mouse then
+        view.mouse.options.onAction=nil
+        -- A new pawn can retire its menu while the viewport widgets survive.
+        -- Release input through the fresh controller, then remove current UI.
+        if refreshInput then view.mouse:hide(true) end
+        view.mouse:dispose(abandon)
+    elseif not abandon then P.setSearchInput(view,false) end
+    if not abandon then
+        -- Lua binding failures must not interrupt later cleanup; this does not
+        -- catch or claim to prevent native C++ access violations.
+        pcall(function() if valid(view.widget) then view.widget:SetVisibility(2) end end)
+        pcall(function() if valid(view.widget) then view.widget:RemoveFromParent() end end)
+    end
+end
+function P.retireLegacyView(view,context)
+    local mouse=view.mouse
+    local sameController=context and mouse and mouse.controllerKey==context.controllerKey
+    local sameOwner=sameController and mouse.worldKey==context.worldKey
+    if mouse then
+        local original=mouse.buttons or {}
+        local routesOnly={}
+        for key,entry in pairs(original) do routesOnly[key]={routeKey=entry.routeKey} end
+        local currentMenu=sameController and Inventory.field(context.pawn,'refBpMenu') or nil
+        if mouse.menu~=currentMenu then mouse.priorUiMode=Inventory.field(currentMenu,'isUiMode')==true end
+        mouse.options.controller=sameController and context.controller or nil
+        mouse.options.onAction=nil;mouse.menu=currentMenu
+        if not sameOwner then mouse.buttons=routesOnly end
+        local ok=pcall(function() mouse:dispose() end)
+        if not ok then
+            -- beta.4 cleanup could stop at the first missing native binding.
+            -- Retry only Lua route/lease removal, with no native object targets.
+            mouse.options.controller=nil;mouse.menu=nil;mouse.buttons=routesOnly;mouse.active=true
+            pcall(function() mouse:dispose() end)
+        end
+    end
+    if sameOwner then
+        pcall(function() view.widget:SetVisibility(2) end)
+        pcall(function() view.widget:RemoveFromParent() end)
+    end
+    view.disposed=true
 end
 P.valid=valid
 return P

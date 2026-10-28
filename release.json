@@ -1,5 +1,5 @@
 {
-  "version": "0.3.0-beta.4",
+  "version": "0.3.0-beta.5",
   "channel": "beta",
   "game": "Far Far West",
   "dataBaseline": "0.3.0.7",
@@ -11,8 +11,9 @@
   "ue4ssBuild": "1181",
   "ue4ssSourceCommit": "8333063595fa3c49ad307f3b0f732accbb760d25",
   "ue4ssDllSha256": "ce5e3c46a920cc00b2817ac61e438c9162830290379d0b5b9c4dfc2b29459290",
-  "runtimeValidation": "Native descriptions and F7 mouse controls were user-confirmed on the previous baseline. This update has offline Lua and native-boundary regression coverage; final in-game visual confirmation of the updated layout remains pending.",
+  "runtimeValidation": "Offline local/host/guest lifecycle, delayed callback, old-version migration and DPI/layout regression coverage. Native B07/B08 crash causation and full in-game multiplayer/pixel acceptance remain unverified.",
   "framework": "UE4SS",
   "installation": "manual-copy",
-  "id": "FFWJokerInfo"
+  "id": "FFWJokerInfo",
+  "compatibilitySignature": "ProcessLocalScriptFunction"
 }
