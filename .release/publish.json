@@ -1,0 +1,36 @@
+{
+  "tag": "v0.3.0-beta.5",
+  "targetCommit": "283cb96a2db595e40d55970d200532fb139fc506",
+  "title": "Detailed Joker Effects 0.3.0-beta.5",
+  "body": "Pre-release: card UI lifecycle, display and fresh-install compatibility fixes.\n\n- Discard queued actions from retired worlds/old Lua instances, select the local host/guest controller, and rebuild F7 after context changes.\n- Preserve same-world description restoration during possession gaps and retire beta.4 active state safely.\n- Keep F7 button captions single-line with native ellipsis and adapt pagination to viewport/DPI.\n- Retain beta.4 conditional bonuses, compact descriptions, weapon applicability and complete F7 rules.\n- Include the game-specific ProcessLocalScriptFunction signature, MIT attribution and bilingual installation/compatibility notes.\n\n**Install:** fully exit the game, install official UE4SS separately, and copy this runtime ZIP's GameRoot into the game directory. Install the framework and included game signature **before the first launch**. Preserve existing loader DLLs/configuration and player Data. After travel, reopen F7.\n\n**Validation:** 30 standalone Lua scripts and 27,600 card-description scenarios passed; archive CRC, privacy/allowlist and exact approved SHA-256 checks passed. Host/guest tests use synthetic engine boundaries. Node extraction to Chinese/space paths is verified; universal Windows narrow-fopen codepage behavior is not. Actual multiplayer/pixel acceptance, B07/B08 native-crash causation and 1183 native ABI remain unverified.\n\n卡牌界面生命周期与排版更新。包含beta.4既有规则修正；修复旧世界回调、角色切换与旧版重载边界，F7列表单行并按视口/DPI分页。请先安装官方框架和随包游戏签名，再首次启动。旧版本继续保留回退。公开附件仅含本卡牌组件、必要依赖和说明，不包含存档、日志、原始转储、玩家数据或其他组件包。",
+  "assets": [
+    {
+      "name": "FFWJokerInfo-0.3.0-beta.5.zip",
+      "blob": "07d29d6b2de3b68ed350008e25cec18fc8f0a490",
+      "bytes": 151820,
+      "sha256": "6d6af2ac88f41a869a4d0b4d15ba5753ad17fdb890cb5043da65a3ba35039ad4",
+      "contentType": "application/zip"
+    },
+    {
+      "name": "FFWJokerInfo-source-0.3.0-beta.5.zip",
+      "blob": "c8357f3c874b528b9c90d155e214492c403f658b",
+      "bytes": 226274,
+      "sha256": "c2644481a4c5aaf33e810a31292b8e0ec1e106ee434befe924b32063bfb0b194",
+      "contentType": "application/zip"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "blob": "ae43ea8bf6dae5e919d9eb52f6cad80f50874944",
+      "bytes": 199,
+      "sha256": "17d5950b465a0b92a48e235ad6000cf3f484c6879a78fe2221351d2b8a542ab1",
+      "contentType": "text/plain"
+    },
+    {
+      "name": "release-manifest.json",
+      "blob": "828974dc9f4f79b689661ca952bd4bd8a30895e1",
+      "bytes": 522,
+      "sha256": "9abf75762e0af1c8cfc129e97f8dbbc21f4c7202961747c17aa97732cb088c2e",
+      "contentType": "application/json"
+    }
+  ]
+}
