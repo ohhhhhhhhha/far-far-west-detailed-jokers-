@@ -1,0 +1,36 @@
+{
+  "tag": "v0.3.0-beta.7",
+  "targetCommit": "a5b42fe0dc8ae70f44638dde2fdf39911f120b02",
+  "title": "Detailed Joker Effects 0.3.0-beta.7 — F7 and effect previews",
+  "body": "Hotfix for F7 recovery, unnecessary idle work and effect previews beyond vanilla equip limits.\n\n- Reattach a still-valid F7 widget after the game removes it from the current viewport.\n- Skip periodic full inventory reads and global card scans when F7/native menus are closed. Native card events, bootstrap and explicit refreshes continue to update.\n- Determine No bonus from effect changes, without the vanilla equip-copy limit suppressing the preview. Lunge reads the current game curve for owned/next-copy values; missing readings are not zero benefit. Owned totals remain visible, including at a real cap.\n\n**Validation:** 37 workspace and 32 standalone test scripts passed. The new regressions first failed on the previous version. A separate code review found no blocking issue. The idle reproduction went from 6 full reads / 36 global card scans across 6 closed-menu polling ticks to zero; this is a call-count result, not a measured native FPS gain. The exact multiplayer-stutter report and this hotfix's native UI still need in-game confirmation.\n\n**Install/update:** fully exit the game, keep the [Nexus 2 Frostburn UE4SS framework](https://www.nexusmods.com/farfarwest/mods/2), and merge the runtime ZIP's GameRoot contents into the Steam-opened game root. Only the card component is included; preserve Data and framework files. Fully restart to load the hotfix.\n\n[Full English guide](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/blob/main/INSTALL.en.md) · [完整中文指南](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/blob/main/INSTALL.zh-CN.md)\n\n**Quick check:** reopen F7 after closing native menus, then inspect five held Lunge cards on an applicable weapon. Existing effects should retain their total. If the live curve is unchanged for the next copy, the pickup correctly reports No bonus. A mod that changes the curve can produce a different total; increasing the allowed copy count alone does not necessarily change the curve.\n\nbeta.7 修复 F7 脱离视口后不显示，减少无菜单时的后台读取和全局扫描。“无加成”依据效果前后变化；突刺读取游戏当前曲线，已持有总效果保留，缺少数据不误报无加成。已通过离线复现与回归；反馈者的真实联机卡顿没有完整复现，不能宣称全部解决。\n\nPrevious releases remain available for rollback. Public archives contain no player saves, logs, dumps or Data.\n",
+  "assets": [
+    {
+      "name": "FFWJokerInfo-0.3.0-beta.7.zip",
+      "blob": "e23ba580694244f4b50150d5170493eddae00c45",
+      "bytes": 162623,
+      "sha256": "1c3719144e056f37aec0abbf97ccba7e965cadd010ffd909ddf3ba3938241376",
+      "contentType": "application/zip"
+    },
+    {
+      "name": "FFWJokerInfo-source-0.3.0-beta.7.zip",
+      "blob": "61032e56215458bc740c922315f402cbe74cd632",
+      "bytes": 238590,
+      "sha256": "7b51215e1d5673e5d3b890ead2c9890c153fa6706dffa85ffb9c7adadf8febf4",
+      "contentType": "application/zip"
+    },
+    {
+      "name": "release-manifest.json",
+      "blob": "71edc9c44fec083597318b57b5824315e2f18792",
+      "bytes": 522,
+      "sha256": "c85d2797ef6467734dda6767fa880af441470e3533db757dac5bd7f912c3aa1c",
+      "contentType": "application/json"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "blob": "672a32b69b9bd9c4fb9cebb4473115a6e41b229a",
+      "bytes": 199,
+      "sha256": "80af2f9c7f8ea17ff516c59584ff5bfcf1a8b7e836209b8065db31a4bb7f6300",
+      "contentType": "text/plain"
+    }
+  ]
+}
