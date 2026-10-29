@@ -1,11 +1,11 @@
 # Detailed Joker Effects — installation, migration and troubleshooting
 
-Component: FFWJokerInfo 0.3.0-beta.6. Updated 2026-10-29. This version changes packaging and installation guidance. Card Lua matches beta.5; previously published assets remain unchanged.
+Component: FFWJokerInfo 0.3.0-beta.7. Updated 2026-10-29. This hotfix restores detached F7 views, reduces idle polling and uses live Lunge curve samples. Previously published assets remain unchanged.
 
 ## 1. Choose the two correct downloads
 
 - Player framework: [Nexus 2 — UE4SS for FarFarWest](https://www.nexusmods.com/farfarwest/mods/2), by anro / AnroG772. Select the Frostburn / UE 5.8 player package. The author describes the player archive as **UE4SS-FarFarWest-v3.0.1-1183-frostburn.zip**. The actual checked Main file is **UE4SS-FarFarWest**, version **3.0.1.1183**, file ID **242**; Nexus may add identifiers to the downloaded filename. Players do not need the zDEV developer package.
-- Card component: the Main runtime file on [Nexus 115](https://www.nexusmods.com/farfarwest/mods/115), or [FFWJokerInfo-0.3.0-beta.6.zip on GitHub](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/download/v0.3.0-beta.6/FFWJokerInfo-0.3.0-beta.6.zip). The SOURCE ZIP is not an installation package.
+- Card component: the Main runtime file on [Nexus 115](https://www.nexusmods.com/farfarwest/mods/115), or [FFWJokerInfo-0.3.0-beta.7.zip on GitHub](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/download/v0.3.0-beta.7/FFWJokerInfo-0.3.0-beta.7.zip). The SOURCE ZIP is not an installation package.
 
 Use the Nexus 2 game-specific package. It includes the signatures and configuration required by this game. UE4SS on GitHub remains the upstream source reference.
 
@@ -64,9 +64,9 @@ For startup failures, inspect the final error in ue4ss/UE4SS.log. After a game u
 
 ## 5. Install the card component
 
-The beta.6 GameRoot contains only the 14 FFWJokerInfo files. It contains no framework DLLs, settings, shared helpers or signatures. Install the Nexus dependency first.
+The beta.7 GameRoot contains only the 14 FFWJokerInfo files. It contains no framework DLLs, settings, shared helpers or signatures. Install the Nexus dependency first.
 
-1. Fully exit and extract FFWJokerInfo-0.3.0-beta.6.zip outside the game directory.
+1. Fully exit and extract FFWJokerInfo-0.3.0-beta.7.zip outside the game directory.
 2. Open the archive’s **GameRoot** folder. Copy the **FarFarWest** folder inside it into the game root opened by Steam’s Browse local files, merging the matching directory. This destination contains **FarFarWest.exe**.
 3. Do not copy the GameRoot folder itself or put its whole contents into the inner Win64 directory. The framework and content ZIPs have different destinations.
 4. The resulting entry point must be:
@@ -88,7 +88,7 @@ Keep Nexus’s UE4SS_Signatures, UE4SS-settings.ini, mods.txt/mods.json, Mods/sh
 - Fully launch the game and enter the lobby. Focus the game window and press F7; laptops using media-key mode may require Fn+F7.
 - Select a card, page, scroll details, close the panel and check that camera control returns. In a mission, inspect a pickup and a Tab card tooltip.
 
-The latest user feedback confirms single-player F7, mouse operation and return-to-title checks for this round. Real LAN/IP-direct-connect multiplayer acceptance is tracked separately; single-player success is not proof of it.
+The beta.5/6 baseline had confirmed single-player F7, mouse and return-to-title checks. Repeat these checks for beta.7, including opening F7 after a native menu closes. Real LAN/IP-direct-connect performance still needs an in-game comparison.
 
 ## 7. Controls
 
@@ -111,7 +111,7 @@ Original pickup and Tab-hover descriptions are enhanced automatically. F7 need n
 4. Very old mixed releases may contain FFWJokerInfo/Scripts/Spawner.lua, whose role moved to the independent trainer. After backup, move that obsolete file out as directed by the relevant version notes.
 5. Fully restart and repeat the short check in section 6. Do not leave two enabled copies of the card mod under Mods.
 
-beta.6 is a separate version that removes the older default framework-signature payload. Previously published ZIPs retain their hashes. Do not copy a signature back from an older content package.
+beta.7 keeps the content-only layout introduced in beta.6. Previously published ZIPs retain their hashes. Do not copy a signature back from an older content package.
 
 ## 9. Troubleshooting
 

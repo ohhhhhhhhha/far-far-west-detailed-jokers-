@@ -251,9 +251,15 @@ register('jokerSlowAndSteady','item','攻速损失、散布减少分别使用曲
     return {attackSpeedBonus=metric('攻击速度加值',n>0 and -Effects.curve('C_Joker_SlowAndSteady_FireRate',n) or 0,'percent'),
         spreadReduction=metric('散布角度减少比例',n>0 and Effects.curve('C_Joker_SlowAndSteady_Accuracy',n) or 0,'percent')}
 end,'4 份后攻速 -30%、散布角度 -70%；总散布角度限制在 0–20 度')
-register('jokerLunge','item','近战距离和判定范围使用同一曲线',item..'F_GetMeleeWeaponAttackTraceRadius',function(n)
-    local v=Effects.curve('C_Joker_Lunge',n)
-    return {meleeRangeBonus=metric('近战判定距离加成',v,'percent'),meleeAngleBonus=metric('近战判定范围加成',v,'percent')}
+register('jokerLunge','item','近战距离和判定范围使用同一曲线',item..'F_GetMeleeWeaponAttackTraceRadius',function(n,i)
+    local v
+    if i.runtimeCurves then
+        v=(i.runtimeCurves.C_Joker_Lunge or {})[n]
+    else
+        v=Effects.curve('C_Joker_Lunge',n)
+    end
+    return {meleeRangeBonus=metric('近战判定距离加成',v,'percent',nil,nil,'C_Joker_Lunge'),
+        meleeAngleBonus=metric('近战判定范围加成',v,'percent',nil,nil,'C_Joker_Lunge')}
 end,'4 份后本卡两项均为 +55%')
 register('jokerCoinFlip','hero','正反两面伤害倍率分别使用曲线',impact..' @11442–11872',function(n)
     return {headsDamageMultiplier=metric('硬币正面时伤害倍率',Effects.curve('C_Joker_Coinflip_Bonus',n),'multiplier'),

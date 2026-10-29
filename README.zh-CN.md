@@ -1,10 +1,18 @@
 # Far Far West — 更详细的奇术卡效果
 
-[English](README.md) · [下载](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/tag/v0.3.0-beta.6) · [反馈问题](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/issues)
+[English](README.md) · [下载](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/tag/v0.3.0-beta.7) · [反馈问题](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/issues)
 
-**FFWJokerInfo · 0.3.0-beta.6 · UE4SS · Windows x64**
+**FFWJokerInfo · 0.3.0-beta.7 · UE4SS · Windows x64**
 
 在原版奇术卡获得界面和 Tab 悬停详情中追加计算后的效果。F7 提供完整规则和实时读数，中英文跟随游戏语言切换。
+
+## beta.7 修复
+
+- F7 控件仍有效、但被游戏从视口移除时，会在当前世界重新挂回。
+- F7 与原生菜单关闭时，跳过定时的完整库存读取和全局卡牌扫描；原生界面事件、菜单开启和主动刷新仍会更新说明。
+- “无加成”以效果前后对比为准，不再由原版装备份数上限拦截。突刺读取游戏当前曲线的现有值与下一张数值；缺少读数时不会当作零收益。已持有卡牌保留总效果，实际封顶时也不会丢失。
+
+离线已复现视口脱离、闲置后台开销及超过四张的突刺显示路径。反馈者的真实联机卡顿仍需实机对照，这些测试没有测量原生 FPS。
 
 ## 生命周期与显示修复
 
@@ -23,7 +31,7 @@
 
 ## 安装与更新
 
-beta.6 改为独立内容包：不再附带框架签名，卡牌 Lua 与 beta.5 一致。玩家依赖为 [Nexus 2 的 Far Far West 专用 UE4SS 包](https://www.nexusmods.com/farfarwest/mods/2)，核对版本 3.0.1.1183、Main 文件 UE4SS-FarFarWest、文件 ID 242。
+本包只包含卡牌组件，不附带框架签名。玩家依赖为 [Nexus 2 的 Far Far West 专用 UE4SS 包](https://www.nexusmods.com/farfarwest/mods/2)，核对版本 3.0.1.1183、Main 文件 UE4SS-FarFarWest、文件 ID 242。
 
 1. 完全退出游戏。迁移旧框架前备份整套安装，并确认所有 Mod 的 Data/配置已保存到活动 Mods 之外。
 2. Steam → 管理 → 浏览本地文件打开含 FarFarWest.exe 的游戏根目录。Nexus 框架文件应安装到其内部 **FarFarWest/Binaries/Win64**，与 FarFarWest-Win64-Shipping.exe 同层。
@@ -42,7 +50,7 @@ F7 开关完整详情。鼠标可以选择、翻页和关闭，滚轮滚动详�
 
 本仓库和下载包仅包含奇术卡说明组件及所需依赖，只读取并显示信息。刷卡、修改器、战斗统计属于其他独立组件。
 
-源码和回归测试位于 FFWTools。审查覆盖 183 条卡牌／升级数据、28 条保留曲线，以及 27,600 组描述场景。用户最新确认了这轮单人 F7、鼠标及返回标题检查；主机／客机和 DPI 模型已有离线覆盖，真实局域网／IP直连的联机验收仍单独跟踪。原生崩溃的定位与验收另行记录。详见[开发说明](DEVELOPMENT.md)和[更新记录](CHANGELOG.md)。
+源码和回归测试位于 FFWTools。审查覆盖 183 条卡牌／升级数据、28 条保留曲线，以及 27,600 组描述场景。此前 beta.5/6 基线已由用户确认单人 F7、鼠标及返回标题正常；beta.7 的原生改动仍需按 INSTALL 实机复核。主机／客机和 DPI 模型已有离线覆盖，真实局域网／IP直连的联机验收仍单独跟踪。原生崩溃的定位与验收另行记录。详见[开发说明](DEVELOPMENT.md)和[更新记录](CHANGELOG.md)。
 
 ## 反馈与许可
 

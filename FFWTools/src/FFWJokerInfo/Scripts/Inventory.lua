@@ -360,7 +360,27 @@ function I.readObjects(gameInstance,playerState,pawn)
         -- Keep those values off other weapon groups: a bow's cache is not a banjo's cache.
         s.inputsByItem.itemHero=copy(heldInputs)
     end
+    -- Sample the same live curve used by F_GetMeleeWeaponAttackTraceRadius.
+    -- Only primitive samples survive this read; no curve UObject is retained.
+    input.runtimeCurves={C_Joker_Lunge={}}
     local snapshot=I.fromSnapshot(s)
+    local samples={[0]=true}
+    for _,itemName in ipairs(Cards.get('jokerLunge').availableOnItems) do
+        local n=Effects.count(I.group(snapshot,itemName).counts,'jokerLunge')
+        samples[n]=true;samples[n+1]=true
+    end
+    local curveValues=read('C_Joker_Lunge',function()
+        local curve=StaticFindObject('/Game/Spells/Jokers/JokerCurve/C_Joker_Lunge.C_Joker_Lunge')
+        assert(curve and curve:IsValid(),'C_Joker_Lunge is not loaded')
+        local values={}
+        for n in pairs(samples) do
+            local v=number(curve:GetFloatValue(n))
+            assert(v and v==v and math.abs(v)<math.huge,'Unreadable C_Joker_Lunge value')
+            values[n]=v
+        end
+        return values
+    end)
+    if curveValues then input.runtimeCurves.C_Joker_Lunge=curveValues end
     if nonempty(heldName) then
         local heldGroup=I.group(snapshot,heldName)
         local heroValues=snapshot.inputsByItem.itemHero

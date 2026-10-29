@@ -1,5 +1,16 @@
 # Changes / 更新记录
 
+## 0.3.0-beta.7 — Card UI and effect feedback fixes
+
+- Reattach a valid current-world F7 root after native viewport removal.
+- Skip full inventory/global-card polling while F7 and native menus are closed; retain bootstrap, UI-event and explicit refreshes.
+- Compare effects without enforcing the vanilla equip-copy limit in description previews. Read live C_Joker_Lunge samples for existing/next counts and retain held totals. Missing samples do not become No bonus.
+- Label F7’s vanilla equip limit as a reference; live Lunge effect limits follow the current game curve.
+- Add reproductions for detached views, idle work and modified/capped Lunge values. The exact multiplayer stutter report still requires real-game comparison.
+
+修复 F7 脱离视口后不显示，减少无菜单时的后台读取和扫描。无加成由效果变化决定；突刺使用当前游戏曲线，已持有效果保留。真实联机卡顿没有在离线测试中完整复现。
+
+
 ## 0.3.0-beta.6 — Nexus content packaging
 
 - Remove the framework-signature payload from GameRoot. Obtain the complete game adaptation from Nexus 2, version 3.0.1.1183 (file 242).

@@ -1,5 +1,5 @@
 {
-  "version": "0.3.0-beta.6",
+  "version": "0.3.0-beta.7",
   "channel": "beta",
   "game": "Far Far West",
   "dataBaseline": "0.3.0.7",
@@ -10,7 +10,7 @@
   "platform": "Windows x64",
   "ue4ssBuild": "1183",
   "ue4ssDllSha256": "c273e7228687b647226fd63d7ca65888d313ece6be18996ec1320d00a5efe1f8",
-  "runtimeValidation": "Card Lua is byte-identical to beta.5, whose offline regressions passed and single-player F7/mouse/title-return checks were confirmed by the user. This version changes packaging and installation documentation. Real LAN/IP-direct-connect and native-crash investigation remain separate.",
+  "runtimeValidation": "Offline reproduction and regressions cover detached current-world F7 views, idle periodic work, original equip-limit removal, live Lunge curve samples and missing-value handling. Native gameplay and the reported multiplayer stutter require in-game confirmation; no native FPS gain is claimed.",
   "framework": "UE4SS",
   "installation": "manual-copy",
   "id": "FFWJokerInfo",

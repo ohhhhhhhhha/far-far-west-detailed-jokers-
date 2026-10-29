@@ -1,6 +1,6 @@
 # Framework dependency — Nexus game-specific package
 
-FFWJokerInfo 0.3.0-beta.6 is a content mod. It bundles no UE4SS loader, configuration, shared helpers or scan signatures. Card Lua matches beta.5; this revision changes packaging and guidance.
+FFWJokerInfo 0.3.0-beta.7 is a content mod. It bundles no UE4SS loader, configuration, shared helpers or scan signatures. This revision changes card UI recovery, idle polling and Lunge curve readings.
 
 ## Player download and destinations
 

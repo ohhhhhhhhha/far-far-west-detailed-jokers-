@@ -33,6 +33,7 @@ S.stateSchema=2
 _G.FFWJokerInfo=S
 S.enabled=true;S.Inventory=I;S.Panel=P;S.Effects=environment.require('Effects');S.Cards=environment.require('Cards')
 S.instance=(S.instance or 0)+1;S.epoch=S.epoch or 0
+S.nativeUiDirty=true -- refresh existing native cards once after a module reload
 local function log(s) print('[FFWJokerInfo] '..s..'\n') end
 local function reportError(err)
     S.errors=S.errors+1
@@ -51,7 +52,7 @@ end
 function S.invalidate(sameOwner)
     S.epoch=S.epoch+1;S.visible=false
     local view=S.view;S.view=nil
-    S.context=nil;S.snapshot=nil;S.uiContexts={};S.tooltipOwners={}
+    S.context=nil;S.snapshot=nil;S.uiContexts={};S.tooltipOwners={};S.nativeUiDirty=false
     if not sameOwner then S.restores={};S.ownerKey=nil end
     I.resetContext()
     if view then P.destroyView(view,not sameOwner,sameOwner) end
@@ -90,6 +91,7 @@ function S.checkContext()
     if S.ownerKey and S.ownerKey~=context.ownerKey then S.invalidate()
     elseif S.context and S.context.key~=context.key then S.invalidate(true) end
     S.ownerKey=context.ownerKey
+    if not S.context then S.nativeUiDirty=true end -- one bootstrap scan for widgets created before hooks
     S.context=context;return context
 end
 local observeBelowHeal=I.observeBelowHeal
@@ -269,6 +271,7 @@ function S.refreshWidget(widget)
     elseif class=='UI_JokerCard_InGame_C' then kind=S.uiContexts[full] or 'current'
     elseif class=='UI_JokerCard_C' then kind='equip' end
     if kind and Scope.matches(target,S.context) then
+        S.nativeUiDirty=true
         if kind=='pickup' or kind=='current' then S.uiContexts[target:GetFullName()]=kind end
         patch(target,snapshot,kind)
     end
@@ -329,7 +332,7 @@ local function ensureView()
         S.view=view
     end
 end
-function S.update()
+function S.update(background)
     if not S.enabled or S.updating then return end
     if not S.checkContext() then return end
     local epoch,context=S.epoch,S.context
@@ -340,6 +343,14 @@ function S.update()
     if not current() then return end
     S.registerUiHooks()
     if not current() then return end
+    local menu=I.field(context.pawn,'refBpMenu')
+    local nativeMenu=I.field(menu,'isUiMode')==true or I.field(menu,'isMenuOpened')==true
+        or I.field(menu,'isAnySpecialMenuOpened')==true
+    if background and not S.visible and not nativeMenu and not S.nativeUiDirty then
+        S.snapshot=nil
+        return
+    end
+    S.nativeUiDirty=false
     local ok,snapshot=pcall(I.read,context)
     if not current() then return end
     if not ok then reportError(snapshot);snapshot=I.fromSnapshot({}) end
@@ -497,7 +508,7 @@ if not S.loopInstalled then
     LoopInGameThreadWithDelay(1000,function()
         local current=_G.FFWJokerInfo
         if current and current.enabled then
-            local ok,err=pcall(current.update)
+            local ok,err=pcall(current.update,true)
             if not ok then reportError(err) end
         end
     end)

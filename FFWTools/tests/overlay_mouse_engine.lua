@@ -38,6 +38,7 @@ function E.install()
     function methods:SetUserFocus(pc) self.focusController=pc end
     function methods:SetIgnoreLookInput(value) self.lookIgnores=math.max(0,(self.lookIgnores or 0)+(value and 1 or -1)) end
     function methods:AddToViewport() self.onScreen=true end
+    function methods:IsInViewport() return self.onScreen==true end
     function methods:RemoveFromParent() self.onScreen=false;if self.parent then self.parent:RemoveChild(self) end end
     function e.object(kind)
         e.serial=e.serial+1

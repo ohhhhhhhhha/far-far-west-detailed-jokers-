@@ -111,8 +111,6 @@ function P.description(id,s,item,kind,original)
         local label=g.label or g.itemName
         if not g.complete then lines[#lines+1]=label..'：效果待读取'
         else
-            local equipped=(g.parts[c.id] or {}).equipped or 0
-            local atEquipLimit=not upgrade and kind=='equip' and equipped>=c.maxAvailable
             local current=kind=='current'
             -- A held stack remains useful at a cap even if removing just one
             -- copy would not lower its total. Compare with having none of it.
@@ -140,7 +138,7 @@ function P.description(id,s,item,kind,original)
                 return a<b
             end)
             local details={}
-            if not atEquipLimit and increment~=0 then
+            if increment~=0 then
                 if #keys==0 and p.status~='verified' then details[1]='效果规则待核实' end
                 for _,key in ipairs(keys) do
                     local m,nextMetric=p.current.metrics[key],p.after.metrics[key]
@@ -239,8 +237,15 @@ function P.page(s,index,pageSize)
         lines[#lines+1]=isUpgrade(c) and ('当前升级 '..p.currentCount..' 级') or ('当前同卡累计 '..p.currentCount..' 份')
         lines[#lines+1]='当前：'..p.current.text
         lines[#lines+1]='叠加方式：'..(p.stacking or '待核实')
-        if not isUpgrade(c) then lines[#lines+1]='大厅装备份数上限：'..c.maxAvailable..'（不是任务效果上限）' end
-        lines[#lines+1]='效果上限：'..(p.effectCap or (p.status=='unresolved' and '待核实' or '已核对路径未发现单卡上限'))
+        if not isUpgrade(c) then
+            lines[#lines+1]=L.choose('原版大厅装备份数上限：','Vanilla lobby equip-copy limit: ')..c.maxAvailable
+                ..L.choose('（仅作参考）',' (reference)')
+        end
+        local effectCap=p.effectCap
+        if c.id=='jokerLunge' and g.inputs.runtimeCurves then
+            effectCap=L.choose('以当前游戏曲线为准','Determined by the current game curve')
+        end
+        lines[#lines+1]='效果上限：'..(effectCap or (p.status=='unresolved' and '待核实' or '已核对路径未发现单卡上限'))
         if p.conditions then lines[#lines+1]=p.conditions end
         if p.status~='verified' then lines[#lines+1]=statusText[p.status] end
     end
@@ -417,6 +422,9 @@ function P.render(view,page,visible,layout)
     if not P.isViewCurrent(view) then P.destroyView(view,true);return false end
     if not visible then P.hideView(view);return true end
     assert(valid(view.widget),'面板已失效')
+    -- Native menus may remove every viewport widget without destroying it.
+    -- Reattach only after the current-world/controller check above succeeds.
+    if not view.widget:IsInViewport() then view.widget:AddToViewport(9950) end
     layout=layout or P.refreshLayout(view)
     view.title:SetText(FText(page.title))
     local hint=layout.compact and L.choose('F7 开关 · F5/F6 选卡 · Shift 翻页','F7 Toggle · F5/F6 Select · Shift Page') or

@@ -1,10 +1,18 @@
 # Far Far West — Detailed Joker Effects
 
-[简体中文](README.zh-CN.md) · [Download](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/tag/v0.3.0-beta.6) · [Report an issue](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/issues)
+[简体中文](README.zh-CN.md) · [Download](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/tag/v0.3.0-beta.7) · [Report an issue](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/issues)
 
-**FFWJokerInfo · 0.3.0-beta.6 · UE4SS · Windows x64**
+**FFWJokerInfo · 0.3.0-beta.7 · UE4SS · Windows x64**
 
 Adds calculated effects to the original Joker pickup descriptions and Tab hover details. F7 provides full rules and live readings. Chinese and English follow the game language.
+
+## Fixed in beta.7
+
+- F7 reattaches its still-valid current-world widget if the game removes it from the viewport.
+- Closed-overlay gameplay skips periodic full inventory reads and global card scans. Native UI events, open menus and explicit refreshes still update descriptions.
+- No bonus follows the effect comparison, rather than the vanilla equip-copy limit. Lunge reads the game’s current curve for the owned and next-copy values; missing samples are not treated as zero benefit. Owned stacks retain their total, including at a real cap.
+
+The offline reproduction covers detached F7 widgets, idle work and Lunge counts beyond four. The reported friend’s real multiplayer stuttering still needs an in-game comparison; these tests do not measure native FPS.
 
 ## Lifecycle and display fixes
 
@@ -23,7 +31,7 @@ Descriptions are left-aligned, wrap in a bounded area and can be scrolled. For e
 
 ## Install or update
 
-beta.6 is a content-only package: it no longer bundles a framework signature. Card Lua matches beta.5. Use the [Nexus 2 game-specific UE4SS player package](https://www.nexusmods.com/farfarwest/mods/2), checked as Main file UE4SS-FarFarWest 3.0.1.1183, file ID 242.
+This is a content-only package with no framework signature. Use the [Nexus 2 game-specific UE4SS player package](https://www.nexusmods.com/farfarwest/mods/2), checked as Main file UE4SS-FarFarWest 3.0.1.1183, file ID 242.
 
 1. Fully exit. Before migrating an old framework, back up its complete installation and verify every mod’s Data/settings are preserved outside the active Mods directory.
 2. Steam → Manage → Browse local files opens the game root containing FarFarWest.exe. Install the Nexus framework inside **FarFarWest/Binaries/Win64**, beside FarFarWest-Win64-Shipping.exe.
@@ -42,7 +50,7 @@ F7 opens or closes full details. Use the mouse to select, page and close; the wh
 
 This repository and its downloads contain only Detailed Joker Effects and its dependencies. It displays information without changing inventory, progression or combat. Spawning, trainer features and combat statistics are separate components.
 
-Lua source and regression tests are under FFWTools. The catalog audit covers 183 card/upgrade entries, 28 retained curves and 27,600 description scenarios. The latest user report confirms this round of single-player F7, mouse and return-to-title checks. Host/guest/DPI models have offline coverage; actual LAN/IP-direct-connect multiplayer acceptance is still tracked separately. Native-crash investigation remains separate. See [development notes](DEVELOPMENT.md) and [changes](CHANGELOG.md).
+Lua source and regression tests are under FFWTools. The catalog audit covers 183 card/upgrade entries, 28 retained curves and 27,600 description scenarios. The beta.5/6 baseline had user-confirmed single-player F7, mouse and return-to-title checks; beta.7's native changes still need the in-game check described in INSTALL. Host/guest/DPI models have offline coverage; actual LAN/IP-direct-connect multiplayer acceptance is still tracked separately. Native-crash investigation remains separate. See [development notes](DEVELOPMENT.md) and [changes](CHANGELOG.md).
 
 ## Support and license
 
