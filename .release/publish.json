@@ -1,0 +1,36 @@
+{
+  "tag": "v0.3.0-beta.10",
+  "targetCommit": "9fb9dc943942b27333f5f0ec1befbfa6c3332534",
+  "title": "Detailed Joker Effects 0.3.0-beta.10 — scrolling and audit fixes (test build)",
+  "body": "Adds controller and mouse-wheel scrolling for long Joker descriptions, plus the beta.9/10 card-component audit fixes.\n\n- Right-stick Y scrolls the hovered/focused overflowing pickup, town or Tab card and the F7 detail pane. Uses a 20% deadzone and the existing menu tick; native mouse-wheel scrolling remains available.\n- Missing weapon IDs, spell slots/cooldowns and minigun ammo stay pending instead of producing false No bonus or invalid arithmetic.\n- Compact previews compare final health/spread limits, retain held totals, and respect disabled healing/heavy-attack paths.\n- Native menu transitions update F7 input ownership. Failed scrolling/acquisition releases controls; reused descriptions reset position and failed wrapping restores text/style.\n- Includes beta.7 F7 viewport recovery, idle-work reduction and live Lunge-curve previews.\n\n**Test status:** this is a prerelease/test build. 44 workspace and 39 standalone regression scripts passed, with failing-before/passing-after cases and independent review. All 15 runtime files match the installed audited beta.10 build. CRC, explicit file lists, privacy checks and an isolated install preserving 24 framework files and synthetic Data passed. Physical controllers, actual Slate rendering and real multiplayer performance have not been accepted; the reported multiplayer stutter is not claimed fully resolved.\n\n**Install/update:** fully exit the game. Install or keep [Nexus 2 — UE4SS for FarFarWest](https://www.nexusmods.com/farfarwest/mods/2), checked player package 3.0.1.1183/file 242, under FarFarWest/Binaries/Win64 beside Shipping.exe. Merge the runtime ZIP's GameRoot contents into the Steam-opened game root. Replace only FFWJokerInfo; retain framework files, settings and Data. Fully restart.\n[English guide](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/blob/v0.3.0-beta.10/INSTALL.en.md) · [中文安装/更新/回滚指南](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/blob/v0.3.0-beta.10/INSTALL.zh-CN.md)\n\n**Quick check:** scroll a long card with the wheel and right stick; change cards; open/close native menus while checking F7 and camera restoration. Missing weapon/spell readings should stay pending. Owned capped stacks retain their totals; a pickup with confirmed unchanged effects shows No bonus.\n\nbeta.10 为预发布测试版：新增长卡牌右摇杆/滚轮适配，合入缺失数据、最终封顶、输入恢复及原描述清理修复。主副武器尚未读到时不再误报“无加成”，明确不适用仍显示“无加成”；F7 完整规则保留。离线回归及安装检查已通过，真实手柄、原生排版及联机性能仍待实机验收。\n\nRuntime/source ZIPs contain only the card component and required dependencies, with no player saves, logs, Data or local personal paths. Previous releases and their assets remain available unchanged for rollback.",
+  "assets": [
+    {
+      "name": "FFWJokerInfo-0.3.0-beta.10.zip",
+      "bytes": 169410,
+      "sha256": "97a8993f85cc78e4b78e3970f64b5d897d732cec8c951fe729e4401f4c7e2f32",
+      "contentType": "application/zip",
+      "blob": "1778d8362228c9a02e8a983a4994c5d8c2a76ffa"
+    },
+    {
+      "name": "FFWJokerInfo-source-0.3.0-beta.10.zip",
+      "bytes": 256708,
+      "sha256": "0b0187c6d0072134cee9b2c52616e38b88b99f7bd62244c5e309d8b200e2270b",
+      "contentType": "application/zip",
+      "blob": "099e427acd42c35f1de30aba1460198da227d667"
+    },
+    {
+      "name": "release-manifest.json",
+      "bytes": 525,
+      "sha256": "35df6a634e7829bc276be08388e2b748678f08e8eb2234c224d679c86c07b916",
+      "contentType": "application/json",
+      "blob": "26a306aaac797f76c77301e026ec7b649899edd2"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 201,
+      "sha256": "7f49d23b4468730a5de50e7aaf5a233f6dc88a8a65cabc15cb4f309108bf662e",
+      "contentType": "text/plain",
+      "blob": "e3f24b339defc8b374c927f62d96fcb4ce5f6269"
+    }
+  ]
+}
