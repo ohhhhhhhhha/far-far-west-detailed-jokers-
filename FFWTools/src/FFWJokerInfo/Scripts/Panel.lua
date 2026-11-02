@@ -34,7 +34,20 @@ local function groupsFor(s,id,item)
     if item then return {} end
     local result={}
     for _,g in ipairs(Inventory.groups(s)) do if Inventory.applies(id,g.itemName) then result[#result+1]=g end end
-    return result
+    local missing={}
+    local card=Cards.get(id);local needsWeapon=false
+    for _,target in ipairs(card.availableOnItems) do
+        if target:lower()~='itemhero' then needsWeapon=true;break end
+    end
+    if needsWeapon then
+        for _,slot in ipairs({{'primary','主武器'},{'secondary','副武器'}}) do
+            local selected=s.selected[slot[1]]
+            if type(selected)~='string' or selected=='' or selected:lower()=='none' then
+                missing[#missing+1]=slot[2]
+            end
+        end
+    end
+    return result,missing
 end
 -- These rules depend on a consumable resource or a temporary combat state.
 -- If their live values are unchanged, compare a labelled trigger/rate instead
@@ -88,7 +101,8 @@ function P.description(id,s,item,kind,original)
     if r and r.status=='disabled' then
         return base..L.text('当前版本禁用；不提供正常获取或效果预览'),{noBonus=false}
     end
-    local lines={};local groups=groupsFor(s,id,item)
+    local lines={};local groups,missingSelection=groupsFor(s,id,item)
+    for _,label in ipairs(missingSelection or {}) do lines[#lines+1]=label..'：效果待读取' end
     if #groups==0 and not s.complete then return base..L.text('效果待读取'),{noBonus=false} end
     local function differs(a,b)
         if type(a)=='number' and type(b)=='number' then return math.abs(a-b)>1e-8 end
@@ -130,7 +144,7 @@ function P.description(id,s,item,kind,original)
                 -- belongs in F7; the compact card can state the exact flat bonus
                 -- and formula without filling its scroll area with missing data.
                 local futureRetaliation=c.id=='jokerPricklyPear' and key=='reflectDamage'
-                if not gravityDetail and not futureRetaliation and not p.current.metrics[key].detailOnly and key~='equippedSameElementSpells' then keys[#keys+1]=key end
+                if not gravityDetail and not futureRetaliation and not p.current.metrics[key].detailOnly and not p.current.metrics[key].aggregateOnly and key~='equippedSameElementSpells' then keys[#keys+1]=key end
             end
             local priority={finalGravityScale=1,gravityReduction=2}
             table.sort(keys,function(a,b)
@@ -161,7 +175,9 @@ function P.description(id,s,item,kind,original)
                         details[#details+1]=detail
                     end
                 end
-                if #details==0 then
+                local maxNow,maxAfter=p.current.metrics.combinedMaxHealth,p.after.metrics.combinedMaxHealth
+                local healthCapped=maxNow and maxAfter and maxNow.value==999 and maxAfter.value==999
+                if #details==0 and not healthCapped then
                     local now=conditionalSummary(c.id,p.currentCount,inputs)
                     local after=conditionalSummary(c.id,p.afterCount,inputs)
                     if now and after and (differs(now.value,after.value) or unknown(now) or unknown(after)) then
@@ -347,6 +363,10 @@ function P.setSearchInput(view,active)
         view.searchInput=nil
     end
 end
+function P.configureScroll(scroll)
+    scroll:SetConsumeMouseWheel(0) -- WhenScrollingPossible: native wheel, no duplicate injection.
+    scroll:SetWheelScrollMultiplier(1)
+end
 function P.createView(query,onAction,options)
     options=options or {}
     local getController=options.getController or require('UEHelpers').GetPlayerController
@@ -390,6 +410,7 @@ function P.createView(query,onAction,options)
     -- can add a separately colored status below the ordinary description.
     view.tree=tree;view.library=library:GetCDO()
     view.detailScroll=place(StaticConstructObject(StaticFindObject('/Script/UMG.ScrollBox'),tree),370,112,680,540)
+    P.configureScroll(view.detailScroll)
     view.detailScroll:SetVisibility(0)
     view.detailBox=StaticConstructObject(StaticFindObject('/Script/UMG.VerticalBox'),tree)
     view.detailScroll:AddChild(view.detailBox)
@@ -427,9 +448,9 @@ function P.render(view,page,visible,layout)
     if not view.widget:IsInViewport() then view.widget:AddToViewport(9950) end
     layout=layout or P.refreshLayout(view)
     view.title:SetText(FText(page.title))
-    local hint=layout.compact and L.choose('F7 开关 · F5/F6 选卡 · Shift 翻页','F7 Toggle · F5/F6 Select · Shift Page') or
-        L.choose('点击选卡／翻页；详情区滚轮滚动   F7 开关   F5/F6 选卡   Shift 翻页',
-        'Click cards / pages; scroll details   F7 Toggle   F5/F6 Select   Shift Page')
+    local hint=layout.compact and L.choose('F7 开关 · 右摇杆／滚轮滚动','F7 Toggle · Right stick / wheel scroll') or
+        L.choose('点击选卡／翻页；右摇杆或描述区滚轮滚动   F7 开关   F5/F6 选卡',
+        'Click cards / pages; right stick or wheel to scroll   F7 Toggle   F5/F6 Select')
     view.hint:SetText(FText(page.hint or hint))
     view.list:SetText(FText(page.list))
     view.detail:SetText(FText(page.plainDetail or page.detail))

@@ -19,6 +19,7 @@ function E.install()
         function pc:IsLocalPlayerController() return self.localPlayer end
         function pc:IsPlayerController() return true end
         pc.world.name='World /Game/Levels/L_Lobby.L_Lobby';pc.Pawn.world=pc.world
+        pc.Pawn.refBpMenu.world=pc.world
         pc.PlayerState=e.object('PlayerState');pc.PlayerState.world=pc.world
         e.gameInstance=e.gameInstance or e.object('GameInstance')
         pc.world.OwningGameInstance=e.gameInstance

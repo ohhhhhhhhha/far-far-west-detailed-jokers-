@@ -35,6 +35,10 @@ function E.install()
     function methods:SetDesiredSizeInViewport(v) self.desired=v end
     function methods:SetPositionInViewport(v) self.position=v end
     function methods:SetScrollOffset(v) self.scrollOffset=v end
+    function methods:GetScrollOffset() return self.scrollOffset or 0 end
+    function methods:GetScrollOffsetOfEnd() return self.finish or 0 end
+    function methods:SetConsumeMouseWheel(v) self.ConsumeMouseWheel=v end
+    function methods:SetWheelScrollMultiplier(v) self.WheelScrollMultiplier=v end
     function methods:SetUserFocus(pc) self.focusController=pc end
     function methods:SetIgnoreLookInput(value) self.lookIgnores=math.max(0,(self.lookIgnores or 0)+(value and 1 or -1)) end
     function methods:AddToViewport() self.onScreen=true end

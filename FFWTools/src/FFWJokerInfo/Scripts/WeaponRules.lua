@@ -252,10 +252,14 @@ register('jokerBardbarian','item','只检测持有；伤害按蓄力曲线缓存
         end
     end
     local speed=i.attackSpeed;local timing=n>0 and speed~=nil and speed>0
-    return {currentSpecialBaseDamage=metric('按当前蓄力缓存可释放的原始重砸伤害',damage,'points','催眠诗人会禁用重砸；随后仍经过通用近战伤害计算',nil,'bardbarianDamages 与本武器和弦／催眠诗人卡'),
+    local metrics={currentSpecialBaseDamage=metric('按当前蓄力缓存可释放的原始重砸伤害',damage,'points','催眠诗人会禁用重砸；随后仍经过通用近战伤害计算',nil,'bardbarianDamages 与本武器和弦／催眠诗人卡'),
         peakCurveDamage=metric('本卡蓄力曲线的峰值',n>0 and 75 or 25,'points','不含和弦升级和通用伤害增幅'),
         peakWindowStartSeconds=metric('按当前攻速下次蓄力峰值窗口开始',timing and 2.51/speed or nil,'seconds',nil,nil,n>0 and '完整攻击速度' or nil),
         peakWindowEndSeconds=metric('按当前攻速下次蓄力峰值窗口结束',timing and 2.99/speed or nil,'seconds',nil,nil,n>0 and '完整攻击速度' or nil)}
+    if lull and lull>0 then
+        for _,name in ipairs({'peakCurveDamage','peakWindowStartSeconds','peakWindowEndSeconds'}) do metrics[name].detailOnly=true end
+    end
+    return metrics
 end,'曲线峰值 75；和弦容量升级另乘 1+15%×份数','verified','曲线从 20 线性升至 2.5 秒的 50，2.51–2.99 秒为 75，3 秒降回 50。缓存 ≤0 的持卡路径返回基础 25，不读取该处未赋值的和弦升级分支。')
 
 register('jokerTrailPack','item','只检测持有；每次尾迹弹丸落地最多请求一个对应元素水洼','BP_Item_Jetpack.F_ImpulsePuddles @189–903; BP_JetpackPuddleProjectile.ExecuteUbergraph @1880–3285',function(n,i)

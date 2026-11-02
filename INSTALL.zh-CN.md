@@ -1,11 +1,11 @@
 # Detailed Joker Effects 安装、迁移与排错
 
-适用组件：FFWJokerInfo 0.3.0-beta.7。更新日期：2026-10-29。此版修复 F7 视口脱离，减少闲置轮询，并读取突刺当前游戏曲线；旧版发布附件保持原样。
+适用组件：FFWJokerInfo 0.3.0-beta.10。更新日期：2026-11-03。此预发布增加手柄/滚轮滚动，修复缺失数据、效果比较、F7 输入恢复及原描述清理；旧版发布附件保持原样。
 
 ## 1. 下载正确的两个包
 
 - 玩家框架入口：[Nexus 2 — UE4SS for FarFarWest](https://www.nexusmods.com/farfarwest/mods/2)。选择作者 anro / AnroG772 的 Frostburn / UE 5.8 玩家包；作者描述中的玩家包名为 **UE4SS-FarFarWest-v3.0.1-1183-frostburn.zip**；本次实际核对的是 Main 文件 **UE4SS-FarFarWest**，版本 **3.0.1.1183**、文件 ID **242**。Nexus 可能给下载名添加编号。普通玩家不需要 zDEV 开发包。
-- 卡牌组件：[Nexus 115 — Detailed Joker Effects](https://www.nexusmods.com/farfarwest/mods/115) 的 Main 运行包，或 [GitHub beta.6 运行 ZIP](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/download/v0.3.0-beta.7/FFWJokerInfo-0.3.0-beta.7.zip)。SOURCE 源码 ZIP 不用于游戏安装。
+- 卡牌组件：从 [GitHub Releases](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/tag/v0.3.0-beta.10) 下载 FFWJokerInfo-0.3.0-beta.10.zip，或使用 [Nexus 115](https://www.nexusmods.com/farfarwest/mods/115?tab=files) 的 beta.10 主文件。此版为预发布测试版，SOURCE 源码 ZIP 不用于游戏安装。
 
 使用 Nexus 2 的游戏专用包，它包含本游戏所需的签名与配置。GitHub UE4SS 项目保留为框架上游来源。
 
@@ -64,9 +64,9 @@
 
 ## 5. 安装卡牌组件
 
-beta.7 的 GameRoot 仅包含 FFWJokerInfo 的 14 个文件，不包含框架 DLL、设置、共享辅助库或签名。先完成 Nexus 框架安装，再安装此内容包。
+beta.10 的 GameRoot 仅包含 FFWJokerInfo 的 15 个文件，不包含框架 DLL、设置、共享辅助库或签名。先完成 Nexus 框架安装，再安装此内容包。
 
-1. 完全退出游戏，在游戏目录之外解压 FFWJokerInfo-0.3.0-beta.7.zip。
+1. 完全退出游戏，在游戏目录之外解压 FFWJokerInfo-0.3.0-beta.10.zip。
 2. 打开卡牌包的 **GameRoot** 文件夹，把里面的 **FarFarWest** 文件夹复制到 Steam“浏览本地文件”打开的游戏根目录，与同名目录合并。此目标旁边应有 **FarFarWest.exe**。
 3. 不要把 GameRoot 文件夹本身复制进去，也不要把整份内容复制到内部 Win64。框架落点与内容包落点不同。
 4. 合并后的入口应为：
@@ -88,7 +88,7 @@ Nexus 的 UE4SS_Signatures、UE4SS-settings.ini、mods.txt/mods.json、Mods/shar
 - 完整启动游戏，进入大厅后按 F7。窗口必须有焦点；使用笔记本功能键模式时可能需要 Fn+F7。
 - 能看到面板后，用鼠标选卡、翻页、滚动详情、关闭，再确认镜头控制恢复。任务内查看获得界面和 Tab 卡牌悬停详情。
 
-此前 beta.5/6 基线已确认单人 F7、鼠标和返回标题正常。beta.7 需重做这些检查，并验证关闭原生菜单后 F7 能否重新显示。真实局域网/IP直连的性能仍需实机对照。
+此前 beta.5/6 基线已确认单人 F7、鼠标和返回标题正常。beta.10 还需测试长卡牌在拾取／酒馆／Tab 和 F7 中的右摇杆与滚轮滚动，以及离开卡牌或关闭菜单后光标控制是否恢复。还应验证原生菜单开关后 F7 鼠标和镜头控制恢复，武器或法术读数未就绪时保留“待读取”。手柄、原生 Slate 排版及真实局域网/IP直连性能仍需实机验收。
 
 ## 7. 操作方式
 
@@ -96,7 +96,8 @@ Nexus 的 UE4SS_Signatures、UE4SS-settings.ini、mods.txt/mods.json、Mods/shar
 | --- | --- |
 | F7 | 打开／关闭完整卡牌详情 |
 | 鼠标左键 | 选择条目、前后翻页、关闭 |
-| 滚轮 | 在详情区域滚动长内容 |
+| 鼠标滚轮 | 指向描述区域，使用原生滚动 |
+| 右摇杆上下 | 滚动悬停／获得焦点的卡牌或 F7 详情；20% 死区 |
 | F5 / F6 | 上一项／下一项 |
 | Shift + F5 / F6 | 上一页／下一页；页容量随窗口和 DPI 调整 |
 | 换图后重新按 F7 | 创建当前世界的新面板 |
@@ -111,7 +112,7 @@ Nexus 的 UE4SS_Signatures、UE4SS-settings.ini、mods.txt/mods.json、Mods/shar
 4. 若从很早的混合版本升级，旧 FFWJokerInfo/Scripts/Spawner.lua 已迁移到独立修改器。确认备份后按版本说明移走该旧文件，避免混合新旧职责。
 5. 完整重启，重做第 6 节的短检查。不要同时保留两个带 enabled.txt 的卡牌副本在 Mods 里。
 
-beta.7 沿用 beta.6 的独立内容包结构。所有已发布旧版 ZIP 保持原哈希；不要从旧包补回签名。
+beta.10 沿用 beta.6 的独立内容包结构。所有已发布旧版 ZIP 保持原哈希；不要从旧包补回签名。
 
 ## 9. 常见问题
 

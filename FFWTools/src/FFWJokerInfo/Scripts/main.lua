@@ -3,7 +3,7 @@
 local directory=debug.getinfo(1,'S').source:sub(2):gsub('\\','/'):match('^(.*)/')
 assert(directory,'FFWJokerInfo needs a file-backed entry point')
 local modules,environment={},nil
-local allowed={Cards=true,Effects=true,Inventory=true,Panel=true,HeroRules=true,WeaponRules=true,UpgradeRules=true,Locale=true,MousePanel=true,Scope=true}
+local allowed={Cards=true,Effects=true,Inventory=true,Panel=true,HeroRules=true,WeaponRules=true,UpgradeRules=true,Locale=true,MousePanel=true,Scope=true,ControllerScroll=true}
 local globalRequire=require
 environment=setmetatable({require=function(name)
     if not allowed[name] then return globalRequire(name) end
@@ -14,6 +14,7 @@ local I=environment.require('Inventory')
 local P=environment.require('Panel')
 local L=environment.require('Locale')
 local Scope=environment.require('Scope')
+local G=environment.require('ControllerScroll')
 local previous=_G.FFWJokerInfo
 local S=previous or {visible=false,index=1,restores={},errors=0,patched=0}
 if previous and previous.stateSchema~=2 then
@@ -34,6 +35,7 @@ _G.FFWJokerInfo=S
 S.enabled=true;S.Inventory=I;S.Panel=P;S.Effects=environment.require('Effects');S.Cards=environment.require('Cards')
 S.instance=(S.instance or 0)+1;S.epoch=S.epoch or 0
 S.nativeUiDirty=true -- refresh existing native cards once after a module reload
+S.scrollState=S.scrollState or {};S.scrollActive=false;S.scrollOwners={}
 local function log(s) print('[FFWJokerInfo] '..s..'\n') end
 local function reportError(err)
     S.errors=S.errors+1
@@ -50,7 +52,8 @@ local function className(widget)
     return widget:GetFullName():match('^(%S+)')
 end
 function S.invalidate(sameOwner)
-    S.epoch=S.epoch+1;S.visible=false
+    S.epoch=S.epoch+1;S.visible=false;S.scrollActive=false;S.scrollOwners={}
+    S.scrollState.lastTime=nil;S.scrollState.elapsed=0
     local view=S.view;S.view=nil
     S.context=nil;S.snapshot=nil;S.uiContexts={};S.tooltipOwners={};S.nativeUiDirty=false
     if not sameOwner then S.restores={};S.ownerKey=nil end
@@ -116,6 +119,20 @@ local function enqueue(action,view)
         if not ok then reportError(err) end
     end)
 end
+local function restoreStyle(record)
+    local function attempt(fn) local ok,err=pcall(fn);if not ok then reportError(err) end end
+    local text=record.widget
+    if P.valid(text) then
+        if record.autoWrap~=nil then attempt(function() text:SetAutoWrapText(record.autoWrap) end) end
+        if record.justification~=nil then attempt(function() text:SetJustification(record.justification) end) end
+        if record.translation then attempt(function() text:SetRenderTranslation(record.translation) end) end
+        if record.fontSize then attempt(function() local font=text.Font;font.Size=record.fontSize;text:SetFont(font) end) end
+    end
+    if P.valid(record.cardBox) then
+        if record.cardWidth then attempt(function() record.cardBox:SetWidthOverride(record.cardWidth) end) end
+        if record.cardHeight then attempt(function() record.cardBox:SetHeightOverride(record.cardHeight) end) end
+    end
+end
 local function fitDescription(widget,text,kind,record)
     local font=I.field(text,'Font');local size=I.field(font,'Size')
     if type(size)~='number' then return end
@@ -156,13 +173,16 @@ local function fitDescription(widget,text,kind,record)
     if not P.valid(parent) or not P.valid(tree) or not P.valid(scrollClass) or not P.valid(sizeClass) then return end
     local box=StaticConstructObject(sizeClass,tree);local scroll=StaticConstructObject(scrollClass,tree)
     assert(P.valid(box) and P.valid(scroll),'创建原描述滚动区失败')
+    P.configureScroll(scroll)
     box:SetWidthOverride(width and width-90 or 300)
     box:SetHeightOverride(kind=='current' and 340 or 260)
     local oldSlot=I.field(text,'Slot');local padding=I.field(oldSlot,'Padding')
     if padding then record.padding={Left=padding.Left,Top=padding.Top,Right=padding.Right,Bottom=padding.Bottom} end
     record.horizontalAlignment=I.field(oldSlot,'HorizontalAlignment')
     record.autoWrap=I.field(text,'AutoWrapText')
-    parent:RemoveChild(text);box:AddChild(scroll)
+    record.descriptionParent=parent;record.descriptionBox=box;record.scroll=scroll
+    local fitted,fitError=pcall(function()
+    box:AddChild(scroll);parent:RemoveChild(text)
     local scrollSlot=scroll:AddChild(text)
     scrollSlot:SetHorizontalAlignment(0)
     scrollSlot:SetPadding({Left=0,Top=0,Right=12,Bottom=6})
@@ -171,7 +191,22 @@ local function fitDescription(widget,text,kind,record)
     text:SetAutoWrapText(true)
     text:SetJustification(0)
     text:SetRenderTranslation({X=0,Y=0})
-    record.descriptionParent=parent;record.descriptionBox=box;record.scroll=scroll
+    end)
+    if not fitted then
+        restoreStyle(record)
+        pcall(function() parent:RemoveChild(box) end)
+        pcall(function() scroll:RemoveChild(text) end)
+        local restored,slot=pcall(function()
+            if text:GetParent()==parent then return text.Slot end
+            return parent:AddChild(text)
+        end)
+        if restored then
+            pcall(function() if record.padding then slot:SetPadding(record.padding) end end)
+            pcall(function() if record.horizontalAlignment~=nil then slot:SetHorizontalAlignment(record.horizontalAlignment) end end)
+            record.scroll=nil;record.descriptionBox=nil;record.descriptionParent=nil
+        end
+        error(fitError)
+    end
 end
 local function patch(widget,snapshot,kind)
     if not Scope.matches(widget,S.context) then return end
@@ -197,9 +232,23 @@ local function patch(widget,snapshot,kind)
     local noBonus=style and style.noBonus or false
     local displayed=noBonus and style.plainText or changed
     local key=text:GetFullName();local record=S.restores[key]
+    if record and (record.scopeKey~=S.context.ownerKey or not P.valid(record.widget)
+        or record.widget:GetAddress()~=text:GetAddress()) then
+        local parent=text:GetParent()
+        if parent==record.descriptionParent and P.valid(parent) and P.valid(record.descriptionBox) then
+            restoreStyle(record)
+            parent:RemoveChild(record.descriptionBox)
+        end
+        S.restores[key]=nil;record=nil
+    end
+    local contentKey=id..'|'..tostring(item or '')
+    if record and record.contentKey~=contentKey and P.valid(record.scroll) then record.scroll:SetScrollOffset(0) end
+    local scrollOwner=(S.scrollOwners or {})[fullName] or widget
+    if record then record.scrollOwner=scrollOwner;record.contentKey=contentKey end
     if displayed and (displayed~=current or not record or record.kind~=kind or record.noBonus~=noBonus
         or (noBonus and not P.valid(record.noBonusText))) then
         record=record or {widget=text,scopeKey=S.context.ownerKey};S.restores[key]=record
+        record.scrollOwner=scrollOwner;record.contentKey=contentKey
         local fitOk,fitError=pcall(function()
             fitDescription(textHost,text,kind,record)
             record.noBonusText=P.setNoBonusText(record.scroll,I.field(textHost,'WidgetTree'),text,record.noBonusText,noBonus)
@@ -215,21 +264,35 @@ local function patch(widget,snapshot,kind)
 end
 function S.scan(snapshot)
     if not S.enabled or S.loading or not S.context then return end
-    local contexts={}
-    local function mark(widget,kind)
-        if Scope.matches(widget,S.context) then contexts[widget:GetFullName()]=kind end
+    for key,record in pairs(S.restores) do
+        if record.scopeKey~=S.context.ownerKey then S.restores[key]=nil
+        elseif not P.valid(record.widget) then
+            local removed=true
+            if P.valid(record.descriptionParent) and Scope.matches(record.descriptionBox,S.context) then
+                restoreStyle(record)
+                local ok,err=pcall(function() record.descriptionParent:RemoveChild(record.descriptionBox) end)
+                removed=ok;if not ok then reportError(err) end
+            end
+            if removed then S.restores[key]=nil end
+        end
+    end
+    local contexts={};S.scrollOwners={}
+    local function mark(widget,kind,owner)
+        if Scope.matches(widget,S.context) then
+            contexts[widget:GetFullName()]=kind;S.scrollOwners[widget:GetFullName()]=owner
+        end
     end
     -- Tab icons create the SAME card class used by the pickup selector. The
     -- owning widget is the evidence for current versus hypothetical +1 values.
     for _,owner in ipairs(FindAllOf('UI_Joker_InGameOnScreen_C') or {}) do
-        if Scope.matches(owner,S.context) then mark(I.field(I.field(owner,'SizeBox_35'),'ToolTipWidget'),'current') end
+        if Scope.matches(owner,S.context) then mark(I.field(I.field(owner,'SizeBox_35'),'ToolTipWidget'),'current',owner) end
     end
     for _,owner in ipairs(FindAllOf('UI_ObtainedJoker_C') or {}) do
-        if Scope.matches(owner,S.context) then mark(I.field(owner,'UI_JokerCard_InGame'),'current') end
+        if Scope.matches(owner,S.context) then mark(I.field(owner,'UI_JokerCard_InGame'),'current',owner) end
     end
     for _,owner in ipairs(FindAllOf('UI_SelectableJoker_C') or {}) do
         local ok,child=pcall(function() if Scope.matches(owner,S.context) then return I.field(owner,'Button_Joker'):GetChildAt(0) end end)
-        if ok then mark(child,'pickup') end
+        if ok then mark(child,'pickup',owner) end
     end
     S.uiContexts=contexts
     S.tooltipOwners={}
@@ -271,14 +334,18 @@ function S.refreshWidget(widget)
     elseif class=='UI_JokerCard_InGame_C' then kind=S.uiContexts[full] or 'current'
     elseif class=='UI_JokerCard_C' then kind='equip' end
     if kind and Scope.matches(target,S.context) then
-        S.nativeUiDirty=true
+        S.nativeUiDirty=true;S.scrollActive=true
+        S.scrollOwners=S.scrollOwners or {}
+        if target~=widget then S.scrollOwners[target:GetFullName()]=class=='UI_EpicTweakTooltip_C' and target or widget end
         if kind=='pickup' or kind=='current' then S.uiContexts[target:GetFullName()]=kind end
         patch(target,snapshot,kind)
     end
 end
 S.uiHooks=S.uiHooks or {}
 local belowHealPath='/Game/Spells/Jokers/AC_PlayerStateJoker.AC_PlayerStateJoker_C:F_TriggerJokerBelowHeal'
-local uiHookPaths={
+local nativeUiPath='/Game/Gamework/BP_Manager_Menu.BP_Manager_Menu_C:F_SetInput_Ui'
+local nativeGamePath='/Game/Gamework/BP_Manager_Menu.BP_Manager_Menu_C:F_SetInput_Game'
+local uiHookPaths={nativeUiPath,nativeGamePath,
     '/Game/Interfaces/Tweaks/UI_JokerCard.UI_JokerCard_C:F_Update',
     '/Game/Interfaces/Tweaks/UI_JokerCard_InGame.UI_JokerCard_InGame_C:Construct',
     '/Game/Interfaces/Tweaks/UI_JokerCard_InGame.UI_JokerCard_InGame_C:F_Refresh',
@@ -289,8 +356,48 @@ local uiHookPaths={
     '/Game/Interfaces/Equipment/UI_EpicTweakTooltip.UI_EpicTweakTooltip_C:PreConstruct',
     belowHealPath,
 }
+local menuTickPath='/Game/Gamework/BP_Manager_Menu.BP_Manager_Menu_C:ReceiveTick'
+function S.controllerTick(menu)
+    local context=S.checkContext()
+    if not context then G.release(S.scrollState,menu);S.scrollActive=false;return end
+    local localMenu=I.field(context.pawn,'refBpMenu')
+    if Scope.identity(menu)~=Scope.identity(localMenu) then return end
+    local native=I.field(menu,'isUiMode')==true or I.field(menu,'isMenuOpened')==true
+        or I.field(menu,'isAnySpecialMenuOpened')==true
+    if not S.visible and not native then G.release(S.scrollState,menu);S.scrollActive=false;return end
+    local now=StaticFindObject('/Script/Engine.GameplayStatics'):GetCDO():GetRealTimeSeconds(menu)
+    local state=S.scrollState
+    local dt=state.lastTime and math.max(0,math.min(.05,now-state.lastTime)) or 0
+    state.lastTime=now;state.elapsed=(state.elapsed or 0)+dt
+    if state.elapsed<1/30 then return end
+    dt=math.min(.05,state.elapsed);state.elapsed=0
+    local detail
+    if S.visible and P.isViewCurrent(S.view) and S.view.mouse:ownsInput() then detail=S.view.detailScroll end
+    G.tick(state,context.controller,menu,context.ownerKey,S.restores,detail,dt)
+end
+local function releaseScroll()
+    local owner=Scope.owner()
+    local menu=owner and I.field(I.field(owner.controller,'Pawn'),'refBpMenu')
+    G.release(S.scrollState,menu)
+end
 function S.registerUiHooks()
     if type(RegisterHook)~='function' or type(StaticFindObject)~='function' then return end
+    local tick=StaticFindObject(menuTickPath)
+    if P.valid(tick) then
+        local address=tick:GetAddress();local old=S.uiHooks[menuTickPath]
+        if not old or old.address~=address or old.instance~=S.instance then
+            if old and old.address==address then pcall(UnregisterHook,menuTickPath,old.pre,old.post) end
+            local instance=S.instance
+            local ok,pre,post=pcall(RegisterHook,menuTickPath,function(context)
+                local current=_G.FFWJokerInfo
+                if not current or not current.enabled or current.loading or current.migrating or current.instance~=instance then return end
+                if not current.visible and not current.scrollActive and not current.scrollState.menuKey then return end
+                local ok,err=pcall(function() current.controllerTick(context:get()) end)
+                if not ok then reportError(err) end
+            end)
+            if ok then S.uiHooks[menuTickPath]={address=address,pre=pre,post=post,instance=instance} else reportError(pre) end
+        end
+    end
     for _,path in ipairs(uiHookPaths) do
         local fn=StaticFindObject(path)
         if P.valid(fn) then
@@ -301,7 +408,7 @@ function S.registerUiHooks()
                 local ok,pre,post=pcall(RegisterHook,path,function(context)
                     local current=_G.FFWJokerInfo
                     if current and current.enabled and not current.loading and not current.migrating and current.instance==listener
-                        and (path==belowHealPath or not current.updating) then
+                        and (path==belowHealPath or path==nativeUiPath or path==nativeGamePath or not current.updating) then
                         -- A shop can construct many cards in one frame. Refresh
                         -- just this widget using the last snapshot; the 1s poll
                         -- remains the sole periodic full inventory/UI scan.
@@ -309,7 +416,14 @@ function S.registerUiHooks()
                             if not current.checkContext() then return end
                             local object=context:get()
                             if not Scope.matches(object,current.context) then return end
-                            if path==belowHealPath then current.Inventory.observeBelowHeal(object,current.context.gameInstance)
+                            if path==nativeUiPath or path==nativeGamePath then
+                                local menu=I.field(current.context.pawn,'refBpMenu')
+                                if Scope.identity(object)~=Scope.identity(menu) then return end
+                                if path==nativeUiPath then G.nativeModeChanged(current.scrollState,menu)
+                                else G.release(current.scrollState,menu) end
+                                if current.visible and P.isViewCurrent(current.view) then current.view.mouse:nativeInputChanged(path==nativeGamePath) end
+                                current.scrollActive=path==nativeUiPath or current.visible
+                            elseif path==belowHealPath then current.Inventory.observeBelowHeal(object,current.context.gameInstance)
                             else current.refreshWidget(object) end
                         end)
                         if not success then reportError(err) end
@@ -346,6 +460,7 @@ function S.update(background)
     local menu=I.field(context.pawn,'refBpMenu')
     local nativeMenu=I.field(menu,'isUiMode')==true or I.field(menu,'isMenuOpened')==true
         or I.field(menu,'isAnySpecialMenuOpened')==true
+    S.scrollActive=S.visible or nativeMenu
     if background and not S.visible and not nativeMenu and not S.nativeUiDirty then
         S.snapshot=nil
         return
@@ -394,12 +509,12 @@ function S.toggle()
     enqueue(function()
         S.visible=not S.visible
         if S.visible then S.update()
-        elseif S.view then P.hideView(S.view) end
+        else releaseScroll();if S.view then P.hideView(S.view) end end
     end)
 end
 function S.hide()
     enqueue(function()
-        S.visible=false
+        S.visible=false;releaseScroll()
         if S.view then P.hideView(S.view) end
     end)
 end
@@ -447,6 +562,7 @@ function S.status(verbose)
     end
 end
 function S.stop()
+    releaseScroll()
     local current=not S.loading and Scope.owner() or nil
     local same=current and current.ownerKey==S.ownerKey
     local newPawn=same and (not S.context or not Scope.read(current) or current.key~=S.context.key)
@@ -458,6 +574,7 @@ function S.stop()
     end
     for key,record in pairs(S.restores) do
         if same and record.scopeKey==current.ownerKey and P.valid(record.widget) then
+            restoreStyle(record)
             local ok,err=pcall(function()
                 local text=stringValue(record.widget:GetText())
                 if text then record.widget:SetText(FText(P.stripDescription(text))) end
@@ -468,14 +585,6 @@ function S.stop()
                     local slot=record.descriptionParent:AddChild(record.widget)
                     if record.padding then slot:SetPadding(record.padding) end
                     if record.horizontalAlignment~=nil then slot:SetHorizontalAlignment(record.horizontalAlignment) end
-                    if record.autoWrap~=nil then record.widget:SetAutoWrapText(record.autoWrap) end
-                    if record.justification~=nil then record.widget:SetJustification(record.justification) end
-                    if record.translation then record.widget:SetRenderTranslation(record.translation) end
-                end
-                if record.fontSize then local font=record.widget.Font;font.Size=record.fontSize;record.widget:SetFont(font) end
-                if P.valid(record.cardBox) then
-                    if record.cardWidth then record.cardBox:SetWidthOverride(record.cardWidth) end
-                    if record.cardHeight then record.cardBox:SetHeightOverride(record.cardHeight) end
                 end
             end)
             if not ok then reportError(err) end

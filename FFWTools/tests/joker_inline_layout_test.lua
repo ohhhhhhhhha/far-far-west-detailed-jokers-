@@ -21,6 +21,8 @@ local function panel(name)
     function p:GetChildAt(i) return self.children[i+1] end
     function p:SetWidthOverride(n) self.WidthOverride=n end
     function p:SetHeightOverride(n) self.HeightOverride=n end
+    function p:SetConsumeMouseWheel(n) self.ConsumeMouseWheel=n end
+    function p:SetWheelScrollMultiplier(n) self.WheelScrollMultiplier=n end
     return p
 end
 local function textBlock(name,value,size)
@@ -81,6 +83,8 @@ eq(mod.errors,0);eq(root.WidthOverride,300,'three candidates keep original width
 eq(text.parent:GetFullName(),'/Script/UMG.ScrollBox','same original TextBlock is retained inside ScrollBox')
 eq(text.Font.Size,15);eq(text.value:find('1.15 → 1.1',1,true)~=nil,true)
 local record=mod.restores[text:GetFullName()]
+eq(record.scroll.ConsumeMouseWheel,0);eq(record.scroll.WheelScrollMultiplier,1)
+eq(record.scrollOwner,selector,"pickup owner drives controller focus")
 eq(record.descriptionBox.WidthOverride,210);eq(record.descriptionBox.HeightOverride,260)
 eq(text.Justification,0,'long descriptions align left')
 eq(text.RenderTransform.Translation.Y,0,'the original four-pixel offset is removed inside the scroll area')

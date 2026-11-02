@@ -105,6 +105,10 @@
     {
       "source": "UE4SS-COMPATIBILITY.en.md",
       "path": "UE4SS-COMPATIBILITY.en.md"
+    },
+    {
+      "source": "FFWTools/src/FFWJokerInfo/Scripts/ControllerScroll.lua",
+      "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/ControllerScroll.lua"
     }
   ],
   "directories": [],
@@ -119,6 +123,7 @@
     "DEVELOPMENT.md",
     "FFWTools/src/FFWJokerInfo/Scripts/CardText.lua",
     "FFWTools/src/FFWJokerInfo/Scripts/Cards.lua",
+    "FFWTools/src/FFWJokerInfo/Scripts/ControllerScroll.lua",
     "FFWTools/src/FFWJokerInfo/Scripts/Effects.lua",
     "FFWTools/src/FFWJokerInfo/Scripts/English.lua",
     "FFWTools/src/FFWJokerInfo/Scripts/HeroRules.lua",
@@ -134,7 +139,13 @@
     "FFWTools/tests/Json.lua",
     "FFWTools/tests/bilingual_catalog_test.lua",
     "FFWTools/tests/common_mouse_test.lua",
+    "FFWTools/tests/controller_audit_test.lua",
+    "FFWTools/tests/controller_scroll_runtime_test.lua",
+    "FFWTools/tests/controller_scroll_test.lua",
     "FFWTools/tests/joker_applicability_test.lua",
+    "FFWTools/tests/joker_audit_input_test.lua",
+    "FFWTools/tests/joker_audit_layout_test.lua",
+    "FFWTools/tests/joker_audit_values_test.lua",
     "FFWTools/tests/joker_catalog_description_test.lua",
     "FFWTools/tests/joker_compact_description_test.lua",
     "FFWTools/tests/joker_conditional_description_test.lua",
@@ -153,6 +164,7 @@
     "FFWTools/tests/joker_mouse_test.lua",
     "FFWTools/tests/joker_next_rules_spec.lua",
     "FFWTools/tests/joker_panel_test.lua",
+    "FFWTools/tests/joker_partial_selection_test.lua",
     "FFWTools/tests/joker_reactive_cards_test.lua",
     "FFWTools/tests/joker_reactive_inventory_test.lua",
     "FFWTools/tests/joker_reload_context_test.lua",

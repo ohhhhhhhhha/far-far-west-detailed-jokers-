@@ -1,10 +1,26 @@
 # Far Far West — Detailed Joker Effects
 
-[简体中文](README.zh-CN.md) · [Download](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/tag/v0.3.0-beta.7) · [Report an issue](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/issues)
+beta.10 prerelease/test build. Controller hardware, native rendering and multiplayer performance verification remain pending.
 
-**FFWJokerInfo · 0.3.0-beta.7 · UE4SS · Windows x64**
+[简体中文](README.zh-CN.md) · [Download](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases) · [Report an issue](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/issues)
+
+**FFWJokerInfo · 0.3.0-beta.10 · UE4SS · Windows x64**
 
 Adds calculated effects to the original Joker pickup descriptions and Tab hover details. F7 provides full rules and live readings. Chinese and English follow the game language.
+
+## Follow-up audit in beta.10
+
+When an equipped weapon ID is not yet available, its comparison stays pending. Known weapon effects still display; explicitly unsupported weapons still show No bonus. No extra polling or framework changes are added.
+
+## Audit fixes in beta.9
+
+Fixes missing minigun-ammo arithmetic, incomplete spell-slot previews, final health/accuracy cap comparisons and blocked Bardbarian previews. Native menu changes now update F7 input ownership; failed scrolling or input acquisition releases controls. Reused card descriptions reset their position, expired records are cleaned up, and failed wrapping restores the native text. Existing card data and framework dependencies are unchanged.
+
+## Controller and mouse scrolling in beta.8
+
+Hover a long card with the game's virtual cursor (or focus its controls), then move the right stick up/down to scroll. This applies to pickup, town and Tab descriptions; F7 scrolls its detail pane. The left stick keeps its native menu navigation. The right stick's virtual-cursor movement returns when the card no longer needs scrolling or its menu closes.
+
+Point the mouse at the description to use the native wheel. Stick drift below 20% is ignored; stronger deflection scrolls faster. Existing values and card rules are unchanged. Real controller testing is still pending.
 
 ## Fixed in beta.7
 
@@ -23,7 +39,7 @@ F7 closes when its world, local controller or character context changes. Press F
 - Pickup previews show the relevant change as current → after pickup. Owned cards show their current total, including effects at their cap.
 - Conditional bonuses are shown with their trigger. Bouncing Ball previews ×1 → ×1.15 while grounded, then ×1.15 → ×1.3 for another copy; these are airborne weapon-damage multipliers.
 - Resource-dependent cards show a labelled trigger value or growth rate when an empty resource hides the benefit.
-- Red **No bonus** appears only in pickup previews when no effective change is established. Weapons outside the card's allowed list still show No bonus; basic punches do not bypass weapon-specific restrictions.
+- Red **No bonus** appears only in pickup previews when the comparison confirms no effective change. Weapons outside the card's allowed list still show No bonus; basic punches do not bypass weapon-specific restrictions.
 - Prickly Pear shows its fixed bonus, retaliation formula and health-damage trigger instead of asking for the next damage event.
 - Native descriptions omit copy counts and stacking/cap footers. F7 retains the full counts, stacking rules, caps and event-dependent readings.
 
@@ -38,7 +54,7 @@ This is a content-only package with no framework signature. Use the [Nexus 2 gam
 3. Extract the card runtime ZIP and merge the **contents inside GameRoot** into the game root from step 2. Do not copy GameRoot itself or put the content archive’s whole structure into the inner Win64 directory.
 4. Check ue4ss/Mods/FFWJokerInfo/enabled.txt and Scripts/main.lua, fully restart, enter the lobby and press F7.
 
-This package installs only 14 card files and preserves Nexus’s DLLs, configuration, shared helpers and complete signature set, as well as existing Data. The older beta.5 archive still has a compatibility signature: copy only its Mods/FFWJokerInfo subtree if using that old file. Previously published assets are unchanged.
+This package installs only 15 card files and preserves Nexus’s DLLs, configuration, shared helpers and complete signature set, as well as existing Data. The older beta.5 archive still has a compatibility signature: copy only its Mods/FFWJokerInfo subtree if using that old file. Previously published assets are unchanged.
 
 No terminal or batch script is needed. The [full guide](INSTALL.en.md) covers the exact tree, Data backup, migration, activation, controls, updates, diagnostics, disable and rollback. See also [framework dependency details](UE4SS-COMPATIBILITY.en.md).
 

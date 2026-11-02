@@ -1,6 +1,6 @@
 # Framework dependency — Nexus game-specific package
 
-FFWJokerInfo 0.3.0-beta.7 is a content mod. It bundles no UE4SS loader, configuration, shared helpers or scan signatures. This revision changes card UI recovery, idle polling and Lunge curve readings.
+FFWJokerInfo 0.3.0-beta.9 is a content mod. It bundles no UE4SS loader, configuration, shared helpers or scan signatures. This revision changes card UI recovery, idle polling and Lunge curve readings.
 
 ## Player download and destinations
 

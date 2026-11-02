@@ -1,5 +1,34 @@
 # Changes / 更新记录
 
+## 0.3.0-beta.10 — 2026-11-03 follow-up audit
+
+- Treat unread primary/secondary weapon IDs as pending comparisons instead of No bonus. Preserve supported, explicitly excluded and hero-only previews.
+- Add missing-selection and bilingual regressions. Keep beta.9 rule, input and lifecycle fixes.
+- Prerelease/test build; hardware and multiplayer acceptance remain pending.
+
+修复武器槽尚未就绪时误报无加成，保留已读取效果及明确不适用判定。未增加后台扫描，未改动游戏数据或框架。
+
+## 0.3.0-beta.9 — Full card-component audit
+
+- Handle missing minigun ammo and incomplete spell cooldown/slot reads without crashes or false No bonus.
+- Use final health and spread-reduction limits for compact previews; retain owned totals and mark unmodelled live health corrections as unknown. Do not advertise Bardbarian heavy-attack gains while Lullabard disables that attack.
+- Restore right-stick leases and mouse input after errors/native menu transitions.
+- Reset reused card scroll positions; clean expired description records/wrappers; distinguish replacement UObjects and roll back partial wrapping/style changes.
+- Regression coverage includes previously passing paths that concealed mock reflection failures. No real hardware, Slate rendering or multiplayer FPS certification is claimed.
+
+全量审查修复：缺失数据、最终封顶、输入恢复、原生描述重用与失败回滚。保留原卡牌表、28 条基础曲线及 Nexus 框架。实机手柄与联机表现仍需确认。
+
+
+## 0.3.0-beta.8 — Controller and mouse description scrolling
+
+- Route right-stick Y to the hovered/focused overflowing card or F7 detail pane. Add a 20% deadzone, proportional speed and boundary clamping.
+- Reuse the paused-menu tick and real-time clock, without a new scan timer. Temporarily reserve the right-stick cursor while scrolling; leave left-stick navigation intact.
+- Explicitly configure native mouse-wheel scrolling and preserve wheel position without duplicate injection.
+- Retain beta.7 effect rules. Offline regressions pass; real controller acceptance remains pending.
+
+支持右摇杆滚动长卡牌与 F7 详情，同时保留原生鼠标滚轮。焦点切换和关闭菜单时恢复原有操作，卡牌数值不变；实际手柄待实机验证。
+
+
 ## 0.3.0-beta.7 — Card UI and effect feedback fixes
 
 - Reattach a valid current-world F7 root after native viewport removal.

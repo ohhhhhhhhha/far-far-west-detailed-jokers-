@@ -69,8 +69,13 @@ return function(R)
     end,switchCap,'verified','要求本地控制、物品已初始化、弹匣未满、当前法术施放物品和待消费标记；排除 meleeWeaponSecondary、meleeWeapon、cancelJokerMagicReload 标签。调用普通换弹，使用备弹，并继承 Consumer 和空弹匣换弹触发效果。')
     register('jokerJokheal','hero','获得卡片的基础治疗 50 加每份本卡 35',
         state..'F_UpdateValuesWithNewJoker @563–1400',function(n,i)
-        return {bonusHeal=metric('本卡额外拾卡治疗',35*n,'points'),
-            pickupHeal=metric('非贪婪拾卡基础治疗',i.modifierGreed and 0 or 50+35*n,'points','UpdateHeal 为 true 且无贪婪词条')}
+        local active;if i.modifierGreed~=nil then active=not i.modifierGreed end
+        local bonus=metric('非贪婪拾卡额外治疗',35*n,'points')
+        bonus.detailOnly=i.modifierGreed==true
+        local heal=conditional('非贪婪拾卡基础治疗',50+35*n,'points',active,
+            'UpdateHeal 为 true 且无贪婪词条','贪婪词条状态',0)
+        if i.modifierGreed==true then heal.potential=nil end
+        return {bonusHeal=bonus,pickupHeal=heal}
     end,nil,'verified','贪婪词条先进入扣除最大生命 20% 的分支，跳过这次治疗。数值为送入治疗函数的基础治疗，最终回复还受治疗倍率和生命上限影响。')
     register('jokerPricklyPear','hero','反伤为反馈事件伤害 + 曲线加值；曲线 15／30／45',
         'BP_Player.ExecuteUbergraph @21099–21846,25595–26078',function(n,i)
@@ -135,7 +140,7 @@ return function(R)
         if name=='itembow' then
             result.bowMagazineRestored=metric('弓的空弹匣额外补箭',n==0 and 0 or (i.magazineAmmo~=nil and (i.magazineAmmo==0 and 1 or 0) or nil),nil,nil,nil,'弓当前弹匣')
         elseif name=='itemminigun' then
-            result.magazineAfterTick=metric('机枪补给后同步弹匣',actual and current+actual,nil,nil,nil,'当前备弹与容量')
+            result.magazineAfterTick=metric('机枪补给后同步弹匣',actual~=nil and current~=nil and current+actual or nil,nil,nil,nil,'当前备弹与容量')
         end
         return result
     end,'3 份起每次份额封顶 30%；实际回复不能超过对应容量','verified',

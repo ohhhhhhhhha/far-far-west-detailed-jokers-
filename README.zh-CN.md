@@ -1,10 +1,26 @@
 # Far Far West — 更详细的奇术卡效果
 
-[English](README.md) · [下载](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/tag/v0.3.0-beta.7) · [反馈问题](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/issues)
+beta.10 预发布测试版。手柄、原生画面与联机性能仍待实机验收。
 
-**FFWJokerInfo · 0.3.0-beta.7 · UE4SS · Windows x64**
+[English](README.md) · [下载](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases) · [反馈问题](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/issues)
+
+**FFWJokerInfo · 0.3.0-beta.10 · UE4SS · Windows x64**
 
 在原版奇术卡获得界面和 Tab 悬停详情中追加计算后的效果。F7 提供完整规则和实时读数，中英文跟随游戏语言切换。
+
+## beta.10 复审修复
+
+武器槽名称暂未读到时保留“待读取”，不再误报“无加成”；已知武器继续显示效果，明确不适用的武器仍显示“无加成”。没有增加轮询或改动框架。
+
+## beta.9 全量审查修复
+
+修复机枪弹药缺失异常、法术槽读取不完整、生命/精准最终封顶判断及重砸被禁用时的预览。原生菜单切换会更新 F7 输入归属；滚动或输入接管失败时释放控制。卡牌内容更换会重置滚动位置，失效记录会清理，包裹描述失败会恢复原文字。卡牌基础数据和框架依赖不变。
+
+## beta.8 手柄与鼠标滚动
+
+用游戏虚拟光标悬停长卡牌，或让其控件获得焦点，再上下推动右摇杆滚动。适用于拾取、酒馆和 Tab 描述；F7 中滚动详情区。左摇杆保持原生菜单操作，离开长卡牌或关闭菜单后恢复右摇杆原用途。
+
+鼠标指向描述区域即可使用原生滚轮。摇杆 20% 死区内不滚动，偏转越大滚动越快。卡牌数值与规则不变，实际手柄仍待实机确认。
 
 ## beta.7 修复
 
@@ -38,7 +54,7 @@
 3. 解压卡牌运行包，将 **GameRoot 文件夹里面的内容**合并到第 2 步的游戏根目录。不要复制 GameRoot 文件夹本身；不要将这份内容包套进内部 Win64。
 4. 检查 ue4ss/Mods/FFWJokerInfo/enabled.txt 和 Scripts/main.lua，完整重启，进入大厅后按 F7。
 
-新包只安装 14 个卡牌文件，保留 Nexus 的 DLL、设置、共享辅助库和完整签名，以及已有 Data。旧 beta.5 包仍含兼容签名，只可复制其 Mods/FFWJokerInfo 子目录；旧版附件未被改写。
+新包只安装 15 个卡牌文件，保留 Nexus 的 DLL、设置、共享辅助库和完整签名，以及已有 Data。旧 beta.5 包仍含兼容签名，只可复制其 Mods/FFWJokerInfo 子目录；旧版附件未被改写。
 
 安装无需终端或批处理。[完整中文指南](INSTALL.zh-CN.md)覆盖目录树、备份迁移、启用、操作、更新、排错、禁用和回滚；另见[框架依赖说明](UE4SS-COMPATIBILITY.zh-CN.md)。
 

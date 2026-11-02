@@ -17,12 +17,13 @@ ExecuteInGameThread=function(fn) fn() end
 FText=function(s) return s end
 local text='伤害 +7%'
 local textBlock={IsValid=function() return true end,GetText=function() return {ToString=function() return text end} end,
- SetText=function(_,s) text=s end,GetFullName=function() return 'TextBlock TestCard.Description' end}
+ SetText=function(_,s) text=s end,GetFullName=function() return 'TextBlock TestCard.Description' end,GetAddress=function()return 'test-description-address' end}
 local widget={IsValid=function() return true end,IsVisible=function() return true end,
  GetFullName=function() return 'UI_JokerCard_C TestCard' end,jokerName='jokerCrackShot',ItemName='itemQuadCylinder',TextBlock_Description=textBlock}
 local function card(label)
     local t={value='重力 -5%',IsValid=function() return true end,GetFullName=function() return 'TextBlock '..label end}
     function t:GetText() return self.value end;function t:SetText(v) self.value=v end
+    function t:GetAddress() return self:GetFullName() end
     return {jokerName='jokerLightWeight',TextBlock_Description=t,IsValid=function() return true end,
         IsVisible=function() return true end,GetFullName=function() return 'UI_JokerCard_InGame_C '..label end},t
 end
@@ -69,6 +70,7 @@ eq(hoverText.value:find('获得后',1,true),nil,'Tab tooltip must not pretend to
 eq(pickupText.value:find('获得后 3 张',1,true),nil)
 eq(pickupText.value:find('1.15 → 1.1',1,true)~=nil,true)
 eq(obtainedText.value:find('获得后',1,true),nil,'already obtained notification is current state')
+eq(mod.errors,0,'native reflection paths must not fail silently')
 local once=text
 mod.update();eq(text,once,'polling must not append duplicate blocks')
 eq(progress.selectedItemA_207_DB75D0B645F36A6C80EA10BC4BCAA457,'itemQuadCylinder')

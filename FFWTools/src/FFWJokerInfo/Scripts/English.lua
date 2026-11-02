@@ -958,5 +958,9 @@ return {
     ["\n\n【奇术卡信息】"] = "\n\n[Joker Info]",
     ["F7 显示／隐藏   F5/F6 选卡   Shift+F5/F6 翻页"] = "F7 Show/hide   F5/F6 Select card   Shift+F5/F6 Page",
     ["当前装备不适用；更换为适用武器后测试。"] = "Not compatible with current equipment; switch to a compatible weapon before testing.",
+  ["未读取的生命修正"]="unread health modifiers",
+  ["本卡散布角度减少比例（封顶前）"]="This card’s spread reduction (before the cap)",
+  ["非贪婪拾卡额外治疗"]="Extra pickup healing without Greed",
+  ["贪婪词条状态"]="Greed modifier state",
 }
 

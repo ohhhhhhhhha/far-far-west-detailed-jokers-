@@ -269,7 +269,10 @@ function I.readObjects(gameInstance,playerState,pawn)
             return {slot=slot,element=element and (elements[element] or 'None'),
                 baseCooldown=number(field(cdo,'spellCooldown')),remaining=remaining}
         end)
-        if spell then spells[#spells+1]=spell end
+        if spell then spells[#spells+1]=spell
+        elseif s.readErrors['Spell'..slot..'CDO'] then
+            spells[#spells+1]={slot=slot,remaining=remaining,readFailed=true}
+        end
     end
     if #spells>0 then input.spells=spells end
     local manager=field(gameInstance,'refItemManager')

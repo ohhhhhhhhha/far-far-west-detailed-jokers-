@@ -113,26 +113,56 @@ function Panel:show(focus)
     local controller=self.options.controller
     assert(self:isCurrent(controller),'mouse panel owner changed')
     local inherited=shared('owner') and shared('controller')==self.controllerKey
-    local cursor=controller.bShowMouseCursor==true
+    local entryCursor=controller.bShowMouseCursor==true
+    local cursor=inherited and shared('cursor')==true or entryCursor
     if inherited then cursor=shared('cursor')==true end
     self.priorCursor=cursor
-    self.menu=menuFor(controller)
-    self.menuKey=identity(self.menu)
-    self.priorUiMode=field(self.menu,'isUiMode')==true
+    self.menu=menuFor(controller);self.menuKey=identity(self.menu)
+    local entryUi=field(self.menu,'isUiMode')==true
+    self.priorUiMode=entryUi
     if inherited and shared('menu')==self.menuKey then self.priorUiMode=shared('uiMode')==true end
-    -- BP_Manager_Menu's tick recenters the mouse every 0.1s unless its own
-    -- UI state is set. UE input mode/cursor visibility alone do not stop it.
-    if self.menu then self.menu.isUiMode=true end
     self.ownsLook=inherited and shared('lookLock')==true
-    if not self.ownsLook then controller:SetIgnoreLookInput(true);self.ownsLook=true end
+    local acquired=false
+    local ok,err=pcall(function()
+        if self.menu then self.menu.isUiMode=true end
+        if not self.ownsLook then controller:SetIgnoreLookInput(true);self.ownsLook=true;acquired=true end
+        controller.bShowMouseCursor=true
+        focus=focus or self.options.host
+        if cursor then focus:SetUserFocus(controller)
+        else self.options.library:SetInputMode_GameAndUIEx(controller,focus,0,false,false) end
+        for _,entry in pairs(self.buttons) do entry.host:SetVisibility(entry.visible and 4 or 2) end
+    end)
+    if not ok then
+        if acquired then pcall(function() controller:SetIgnoreLookInput(false) end) end
+        pcall(function() if valid(self.menu) then self.menu.isUiMode=entryUi end end)
+        pcall(function() controller.bShowMouseCursor=entryCursor end)
+        if not entryCursor then pcall(function() self.options.library:SetInputMode_GameOnly(controller,false) end) end
+        for _,entry in pairs(self.buttons) do pcall(function() entry.host:SetVisibility(2) end) end
+        if self:ownsInput() then
+            for _,key in ipairs({'owner','controller','cursor','menu','uiMode','lookLock'}) do shared(key,nil,true) end
+        end
+        self.ownsLook=false;self.active=false
+        error(err)
+    end
     shared('menu',self.menuKey,true);shared('uiMode',self.priorUiMode,true);shared('lookLock',self.ownsLook,true)
     shared('controller',self.controllerKey,true);shared('cursor',cursor,true);shared('owner',self.token,true)
     self.active=true
-    controller.bShowMouseCursor=true
-    focus=focus or self.options.host
-    if cursor then focus:SetUserFocus(controller)
-    else self.options.library:SetInputMode_GameAndUIEx(controller,focus,0,false,false) end
-    for _,entry in pairs(self.buttons) do entry.host:SetVisibility(entry.visible and 4 or 2) end
+end
+function Panel:nativeInputChanged(gameMode)
+    if not self.active or not self:ownsInput() then return end
+    local pc=self.options.getController and self.options.getController() or self.options.controller
+    if not self:isCurrent(pc) then return end
+    local menu=menuFor(pc)
+    self.priorCursor=pc.bShowMouseCursor==true
+    self.priorUiMode=field(menu,'isUiMode')==true
+    shared('cursor',self.priorCursor,true);shared('uiMode',self.priorUiMode,true)
+    shared('menu',identity(menu),true)
+    if gameMode then
+        -- F_SetInput_Game has already released one look lock and set GameOnly.
+        self.ownsLook=false;shared('lookLock',false,true)
+        self.active=false
+        self:show(self.options.host)
+    end
 end
 function Panel:hide(abandon)
     if self.active then

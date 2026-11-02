@@ -693,8 +693,8 @@ function Effects.preview(id,counts,inputs,increment)
             if spellRules[spellId] then
                 local currentCd=Effects.spellCooldown(counts,context)
                 local nextCd=Effects.spellCooldown(changed(counts),nextContext)
-                current.metrics['spellCooldown'..spell.slot]=metric(label..'完整冷却',currentCd.seconds,'seconds',nil,nil,currentCd.missing)
-                after.metrics['spellCooldown'..spell.slot]=metric(label..'完整冷却',nextCd.seconds,'seconds',nil,nil,nextCd.missing)
+                current.metrics['spellCooldown'..spell.slot]=metric(label..'完整冷却',currentCd.seconds,'seconds',nil,nil,currentCd.missing or (spell.baseCooldown==nil and '法术基础冷却'))
+                after.metrics['spellCooldown'..spell.slot]=metric(label..'完整冷却',nextCd.seconds,'seconds',nil,nil,nextCd.missing or (nextSpell.baseCooldown==nil and '法术基础冷却'))
             end
             local key
             if spellId=='jokercastaway' then context.otherSpellRemaining=spell.remaining;nextContext.otherSpellRemaining=nextSpell.remaining;key='remainingAfterCast'
@@ -720,6 +720,42 @@ function Effects.preview(id,counts,inputs,increment)
                 if result.metrics.cooldownMultiplier then result.metrics.cooldownMultiplier.detailOnly=true end
             end
         end
+    end
+    local healthCard=healthCurves[card.id] or card.id=='jokerGoliath' or card.id=='jokerWellFed'
+        or card.id=='jokerUpgradeHeal' or card.id=='jokerCheapSkate' or card.id=='jokerTweakDealer'
+    if healthCard then
+        if card.id=='jokerCheapSkate' then
+            -- The native cache belongs to the present count; the next refresh
+            -- recomputes it using the current mission gold.
+            afterInputs.cheapSkateBonusHealth=nil
+        end
+        current.metrics.combinedMaxHealth=Effects.maxHealth(inputs.heroCounts or counts,inputs)
+        after.metrics.combinedMaxHealth=Effects.maxHealth(afterInputs.heroCounts or changed(counts),afterInputs)
+        local observed=inputs.maxHealth
+        if observed~=nil and current.metrics.combinedMaxHealth.value~=nil
+            and math.abs(observed-current.metrics.combinedMaxHealth.value)>.001 then
+            current.metrics.combinedMaxHealth.value=observed
+            after.metrics.combinedMaxHealth.value=nil
+            after.metrics.combinedMaxHealth.missing='未读取的生命修正'
+        end
+        for _,result in ipairs({current,after}) do
+            for _,key in ipairs({'flatHealth','healthMultiplierDelta'}) do
+                if result.metrics[key] then result.metrics[key].aggregateOnly=true end
+            end
+        end
+    end
+    if card.id=='jokerUpgradeAccuracy' or card.id=='jokerSlowAndSteady' then
+        local function spread(source)
+            local slow=count(source,'jokerSlowAndSteady')
+            return metric('散布角度减少比例',clamp(.05*count(source,'jokerUpgradeAccuracy')+
+                (slow>0 and Effects.curve('C_Joker_SlowAndSteady_Accuracy',slow) or 0),0,1),'percent')
+        end
+        current.metrics.combinedSpreadReduction=spread(inputs.itemCounts)
+        after.metrics.combinedSpreadReduction=spread(afterInputs.itemCounts)
+        for _,result in ipairs({current,after}) do if result.metrics.spreadReduction then
+            result.metrics.spreadReduction.aggregateOnly=true
+            result.metrics.spreadReduction.label='本卡散布角度减少比例（封顶前）'
+        end end
     end
     refreshResult(current);refreshResult(after)
     local lines={card.name,card.description,'当前 '..numberText(n)..' 份 → 选取后 '..numberText(n+increment)..' 份',
