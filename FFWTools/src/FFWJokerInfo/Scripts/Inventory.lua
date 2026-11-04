@@ -167,11 +167,18 @@ end
 function I.observeBelowHeal(component,gameInstance)
     local ps=field(component,'PlayerState')
     local hp,maximum=number(field(ps,'playerHeal')),number(field(ps,'playerMaxHeal'))
-    if not hp or not maximum or hp<=0 or hp>=maximum then return false end
-    local pawn=ps:GetPawn()
-    if not pawn:IsLocallyControlled() then return false end
+    if hp==nil or maximum==nil then
+        if componentKey(component)==hitMeCache.key then hitMeCache={} end
+        return false
+    end
+    if hp<=0 or hp>=maximum then return false end
     local key=componentKey(component)
     if not key then return false end
+    -- This event can replace the native timer cache. Discard the previous
+    -- observation before any fallible reads; a failed refresh is not old data.
+    if key==hitMeCache.key then hitMeCache={} end
+    local pawn=ps:GetPawn()
+    if not pawn:IsLocallyControlled() then return false end
     local lib=StaticFindObject('/Game/Gamework/BPFL_FunctionLibrary.BPFL_FunctionLibrary_C'):GetCDO()
     local has,value={},{}
     gameInstance=gameInstance or require('UEHelpers').GetGameInstance()
@@ -263,7 +270,10 @@ function I.readObjects(gameInstance,playerState,pawn)
         local remaining=number(field(runtimeStats,F['cooldown'..slot]))
         input['spellCooldown'..slot]=remaining
         local spell=read('Spell'..slot..'CDO',function()
-            local cls=field(playerState,'spell'..slot..'Runtime')
+            -- Let the outer read boundary retain reflection failures as an
+            -- unknown slot. The tolerant field() helper would turn them into
+            -- an apparently empty slot and suppress an applicable spell bonus.
+            local cls=unwrap(playerState['spell'..slot..'Runtime'])
             if not cls or not cls:IsValid() then return nil end
             local cdo=cls:GetCDO();local element=number(field(cdo,'element'))
             return {slot=slot,element=element and (elements[element] or 'None'),

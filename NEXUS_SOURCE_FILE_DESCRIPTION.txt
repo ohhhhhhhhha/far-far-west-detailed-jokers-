@@ -1,0 +1,4 @@
+FFWJokerInfo 0.3.0-beta.14 source (beta prerelease)
+Standalone Lua source, adapted regression tests, bilingual documentation and explicit packaging manifest/build API. For development; players should use the runtime Main file instead. Requires a compatible UE4SS framework to run in game; no framework, game data, saves or personal logs are included.
+
+独立源码包，含Lua源码、回归测试、双语文档及打包清单；开发用途，玩家请下载Main运行包。不含框架、存档或个人日志。

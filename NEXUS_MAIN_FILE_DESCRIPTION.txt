@@ -1,0 +1,6 @@
+FFWJokerInfo 0.3.0-beta.14 (beta prerelease)
+Detailed Joker Effects runtime. Updates since beta.10: controller-path performance, F7 snapshot navigation/render caching, spell-slot pending readings, reactive cache invalidation and layout recovery.
+Requires Nexus mod 2 UE4SS for FarFarWest 3.0.1.1183, Main file 242. Fully exit the game, then copy the contents INSIDE GameRoot into the game root containing FarFarWest.exe. Includes 15 card files; no framework bundled. Preserve Data/settings.
+Offline regressions verified; actual controller, Slate and multiplayer FPS acceptance remain pending.
+
+beta预发布运行包。先安装Nexus 2专用框架3.0.1.1183（Main文件242），退出游戏后合并GameRoot里面的内容到游戏根目录。保留Data/配置，不含框架。实机手柄、原生画面与联机FPS待验收。

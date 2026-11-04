@@ -1,12 +1,34 @@
 # Far Far West — Detailed Joker Effects
 
-beta.10 prerelease/test build. Controller hardware, native rendering and multiplayer performance verification remain pending.
+Beta.14 prerelease: layout recovery, F7 navigation and rendering optimizations, controller-path performance fixes and reliable pending readings. Download the runtime ZIP below. Hardware, native rendering and multiplayer FPS acceptance remain pending.
 
 [简体中文](README.zh-CN.md) · [Download](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases) · [Report an issue](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/issues)
 
-**FFWJokerInfo · 0.3.0-beta.10 · UE4SS · Windows x64**
+**FFWJokerInfo · 0.3.0-beta.14 · UE4SS · Windows x64**
 
 Adds calculated effects to the original Joker pickup descriptions and Tab hover details. F7 provides full rules and live readings. Chinese and English follow the game language.
+
+## Layout recovery in beta.14
+
+If a native layout setter fails during a viewport change, the next refresh retries the full geometry update. Returning to the previous viewport size also retries, rather than leaving partially moved controls. The last completed layout is retained for navigation until the update succeeds. beta.13 navigation and unchanged-render optimizations remain in place.
+
+## Performance and interaction in beta.13
+
+Selecting cards or changing pages now uses the displayed snapshot; live data still refreshes once a second. Background card additions keep the selected card and scroll position, and queued clicks retain the card you clicked. Temporary missing inventory data no longer discards that selection. Unchanged F7 content skips repeated control writes; changed values, language, viewport, close/reopen, detached views and module reload still refresh correctly.
+
+Offline models: five selection actions went from five full inventory reads and 30 global card scans to zero; six unchanged F7 refreshes went from 792 control setters to zero. These are call counts, not a native FPS result. Physical controller behavior and real multiplayer performance still need an in-game comparison.
+
+Mixed known/unknown weapon previews now label the known weapon's effects. Confirmed whitelist exclusions do not wait for irrelevant inventory counts; eligible unknown counts remain pending.
+
+## Follow-up fix in beta.12
+
+If reading a spell-slot field fails, retain that slot as pending instead of treating it as empty and showing a false No bonus. The next successful snapshot restores the actual cooldown; genuinely empty slots remain empty. A failed new Hit Me trigger observation invalidates the old healing-rate cache until a successful observation; known full-health events retain the unchanged native cache. The beta.11 controller performance fixes are retained.
+
+## Performance fixes in beta.11
+
+Right-stick target discovery starts on actual stick movement. Mouse-only/neutral input does not walk all retained card trees; a centered stick validates only an existing scroll target. Unselected cards are rejected before ancestor walks, no-target searches are limited to 10Hz and unchanged scroll offsets are not rewritten. The current local menu is filtered and timed before full context queries: 10Hz idle-axis checks, 30Hz active scrolling. Paused menus retain the real-time clock; native mouse-wheel routing is unchanged.
+
+In the six-second, 200-card model, neutral-input parent queries fell from 396,000 to 0. At 240Hz, full context queries fell from 1,440 to 60; unrelated menus and menus with no card/F7 require none. These are call counts, not an FPS benchmark. Physical controller targeting and multiplayer stutter still need an in-game comparison.
 
 ## Follow-up audit in beta.10
 
@@ -28,7 +50,7 @@ Point the mouse at the description to use the native wheel. Stick drift below 20
 - Closed-overlay gameplay skips periodic full inventory reads and global card scans. Native UI events, open menus and explicit refreshes still update descriptions.
 - No bonus follows the effect comparison, rather than the vanilla equip-copy limit. Lunge reads the game’s current curve for the owned and next-copy values; missing samples are not treated as zero benefit. Owned stacks retain their total, including at a real cap.
 
-The offline reproduction covers detached F7 widgets, idle work and Lunge counts beyond four. The reported friend’s real multiplayer stuttering still needs an in-game comparison; these tests do not measure native FPS.
+The offline reproduction covers detached F7 widgets, idle work and Lunge counts beyond four. Reported multiplayer stuttering still needs an in-game comparison; these tests do not measure native FPS.
 
 ## Lifecycle and display fixes
 
@@ -66,7 +88,7 @@ F7 opens or closes full details. Use the mouse to select, page and close; the wh
 
 This repository and its downloads contain only Detailed Joker Effects and its dependencies. It displays information without changing inventory, progression or combat. Spawning, trainer features and combat statistics are separate components.
 
-Lua source and regression tests are under FFWTools. The catalog audit covers 183 card/upgrade entries, 28 retained curves and 27,600 description scenarios. The beta.5/6 baseline had user-confirmed single-player F7, mouse and return-to-title checks; beta.7's native changes still need the in-game check described in INSTALL. Host/guest/DPI models have offline coverage; actual LAN/IP-direct-connect multiplayer acceptance is still tracked separately. Native-crash investigation remains separate. See [development notes](DEVELOPMENT.md) and [changes](CHANGELOG.md).
+Lua source and regression tests are under FFWTools. The catalog audit covers 183 card/upgrade entries, 28 retained curves and 27,600 description scenarios. The beta.5/6 baseline had user-confirmed single-player F7, mouse and return-to-title checks; beta.14's native changes still need the in-game check described in INSTALL. Host/guest/DPI models have offline coverage; actual LAN/IP-direct-connect multiplayer acceptance is still tracked separately. Native-crash investigation remains separate. See [development notes](DEVELOPMENT.md) and [changes](CHANGELOG.md).
 
 ## Support and license
 

@@ -35,7 +35,8 @@ _G.FFWJokerInfo=S
 S.enabled=true;S.Inventory=I;S.Panel=P;S.Effects=environment.require('Effects');S.Cards=environment.require('Cards')
 S.instance=(S.instance or 0)+1;S.epoch=S.epoch or 0
 S.nativeUiDirty=true -- refresh existing native cards once after a module reload
-S.scrollState=S.scrollState or {};S.scrollActive=false;S.scrollOwners={}
+if S.view then S.view.rendered=nil end -- apply new renderer code to a surviving view
+S.scrollState=S.scrollState or {};S.scrollActive=false;S.scrollOwners={};S.scrollMenuKey=nil
 local function log(s) print('[FFWJokerInfo] '..s..'\n') end
 local function reportError(err)
     S.errors=S.errors+1
@@ -53,9 +54,10 @@ local function className(widget)
 end
 function S.invalidate(sameOwner)
     S.epoch=S.epoch+1;S.visible=false;S.scrollActive=false;S.scrollOwners={}
-    S.scrollState.lastTime=nil;S.scrollState.elapsed=0
+    S.scrollState.lastTime=nil;S.scrollState.elapsed=0;S.scrollState.clockMenuKey=nil;S.scrollState.moving=false
+    S.scrollMenuKey=nil
     local view=S.view;S.view=nil
-    S.context=nil;S.snapshot=nil;S.uiContexts={};S.tooltipOwners={};S.nativeUiDirty=false
+    S.context=nil;S.snapshot=nil;S.selectionKey=nil;S.uiContexts={};S.tooltipOwners={};S.nativeUiDirty=false
     if not sameOwner then S.restores={};S.ownerKey=nil end
     I.resetContext()
     if view then P.destroyView(view,not sameOwner,sameOwner) end
@@ -95,7 +97,9 @@ function S.checkContext()
     elseif S.context and S.context.key~=context.key then S.invalidate(true) end
     S.ownerKey=context.ownerKey
     if not S.context then S.nativeUiDirty=true end -- one bootstrap scan for widgets created before hooks
-    S.context=context;return context
+    S.context=context
+    S.scrollMenuKey=Scope.identity(I.field(context.pawn,'refBpMenu'))
+    return context
 end
 local observeBelowHeal=I.observeBelowHeal
 I.observeBelowHeal=function(component,gameInstance)
@@ -358,19 +362,28 @@ local uiHookPaths={nativeUiPath,nativeGamePath,
 }
 local menuTickPath='/Game/Gamework/BP_Manager_Menu.BP_Manager_Menu_C:ReceiveTick'
 function S.controllerTick(menu)
+    local state=S.scrollState
+    -- The key comes from a freshly checked local context. Reject other menu
+    -- instances before doing any local-player lookup or retained-widget work.
+    local menuKey=Scope.identity(menu)
+    if not menuKey or menuKey~=S.scrollMenuKey then return end
+    local now=StaticFindObject('/Script/Engine.GameplayStatics'):GetCDO():GetRealTimeSeconds(menu)
+    if state.clockMenuKey~=menuKey then state.lastTime=nil;state.elapsed=0;state.clockMenuKey=menuKey end
+    local interval=state.moving and 1/30 or .1
+    if state.lastTime and now>=state.lastTime then state.elapsed=(state.elapsed or 0)+(now-state.lastTime)
+    else state.elapsed=interval end
+    state.lastTime=now
+    if state.elapsed<interval-1e-9 then return end
+    local dt=state.elapsed;state.elapsed=0
+    -- Revalidate the world/controller/pawn before touching cached UI. Idle axis
+    -- polling is 10Hz; active scrolling is 30Hz, including paused menus.
     local context=S.checkContext()
-    if not context then G.release(S.scrollState,menu);S.scrollActive=false;return end
+    if not context then G.release(state,menu);S.scrollActive=false;return end
     local localMenu=I.field(context.pawn,'refBpMenu')
-    if Scope.identity(menu)~=Scope.identity(localMenu) then return end
+    if menuKey~=Scope.identity(localMenu) then return end
     local native=I.field(menu,'isUiMode')==true or I.field(menu,'isMenuOpened')==true
         or I.field(menu,'isAnySpecialMenuOpened')==true
-    if not S.visible and not native then G.release(S.scrollState,menu);S.scrollActive=false;return end
-    local now=StaticFindObject('/Script/Engine.GameplayStatics'):GetCDO():GetRealTimeSeconds(menu)
-    local state=S.scrollState
-    local dt=state.lastTime and math.max(0,math.min(.05,now-state.lastTime)) or 0
-    state.lastTime=now;state.elapsed=(state.elapsed or 0)+dt
-    if state.elapsed<1/30 then return end
-    dt=math.min(.05,state.elapsed);state.elapsed=0
+    if not S.visible and not native then G.release(state,menu);S.scrollActive=false;return end
     local detail
     if S.visible and P.isViewCurrent(S.view) and S.view.mouse:ownsInput() then detail=S.view.detailScroll end
     G.tick(state,context.controller,menu,context.ownerKey,S.restores,detail,dt)
@@ -392,6 +405,7 @@ function S.registerUiHooks()
                 local current=_G.FFWJokerInfo
                 if not current or not current.enabled or current.loading or current.migrating or current.instance~=instance then return end
                 if not current.visible and not current.scrollActive and not current.scrollState.menuKey then return end
+                if not current.visible and not current.scrollState.menuKey and not next(current.restores) then return end
                 local ok,err=pcall(function() current.controllerTick(context:get()) end)
                 if not ok then reportError(err) end
             end)
@@ -475,16 +489,33 @@ function S.update(background)
         ensureView()
         if current() and S.view then
             local layout=P.refreshLayout(S.view)
-            P.render(S.view,S.page(snapshot),true,layout)
+            P.render(S.view,S.page(snapshot,true),true,layout)
         end
     end
     end)
     S.updating=false
     if not success then error(failure) end
 end
-function S.page(snapshot)
-    local page=P.page(snapshot,S.index,S.view and S.view.layout and S.view.layout.rows);S.index=page.index
+function S.page(snapshot,retainSelection)
+    local retained=retainSelection and S.selectionKey or nil
+    local page=P.page(snapshot,S.index,S.view and S.view.layout and S.view.layout.rows,retained)
+    S.index=page.index
+    -- A missing collection can temporarily omit a card. Keep its identity for
+    -- the next successful refresh; explicit navigation may still choose another.
+    if not (retained and not snapshot.complete and page.selectionKey~=retained) then
+        S.selectionKey=page.selectionKey
+    end
     return page
+end
+local function renderNavigation(retainSelection)
+    -- The displayed snapshot refreshes once a second. Browsing it does not
+    -- require another inventory read or a global native-card scan.
+    if not S.visible then return end
+    ensureView()
+    if S.visible and S.view then
+        local layout=P.refreshLayout(S.view)
+        P.render(S.view,S.page(S.snapshot,retainSelection),true,layout)
+    end
 end
 function S.uiStatus()
     if not S.checkContext() then return end
@@ -522,23 +553,28 @@ function S.mouse(action,value)
     if not S.enabled or not S.visible then return end
     if action=='close' then S.hide();return end
     if action=='previous' or action=='next' then S.move(action=='previous' and -1 or 1);return end
+    local selectedKey=action=='select' and S.view and S.view.rowKeys and S.view.rowKeys[value]
     enqueue(function()
             if not S.visible then return end
-            if action=='select' and type(value)=='number' then S.index=value
+            if not S.snapshot then S.update();if not S.snapshot or not S.visible then return end end
+            if action=='select' and type(value)=='number' then
+                S.index=value;S.selectionKey=selectedKey
             elseif action=='previousPage' or action=='nextPage' then
-                local page=S.page(S.snapshot)
+                local page=S.page(S.snapshot,true)
                 local number=math.max(1,math.min(page.pageCount,page.pageNumber+(action=='previousPage' and -1 or 1)))
                 S.index=(number-1)*page.pageSize+1
             else return end
-            S.update()
+            renderNavigation(action=='select')
     end,S.view)
 end
 function S.move(delta,pages)
     if not S.visible then return end
     enqueue(function()
             if not S.visible then return end
-            S.index=S.index+delta*(pages and S.page(S.snapshot).pageSize or 1)
-            S.update()
+            if not S.snapshot then S.update();if not S.snapshot or not S.visible then return end end
+            local page=S.page(S.snapshot,true)
+            S.index=page.index+delta*(pages and page.pageSize or 1)
+            renderNavigation(false)
     end,S.view)
 end
 function S.status(verbose)

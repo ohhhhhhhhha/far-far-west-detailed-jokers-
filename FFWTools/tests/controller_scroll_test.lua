@@ -28,16 +28,16 @@ local sa,sb=scroll('a'),scroll('b')
 local records={a={scopeKey='world',scroll=sa,scrollOwner=a},b={scopeKey='world',scroll=sb,scrollOwner=b}}
 local state={}
 G.tick(state,pc,menu,'world',records,nil,.05)
-assert(menu.useRightStickInputs==false,'targeted long card must reserve right stick')
+assert(menu.useRightStickInputs==true,'neutral input must leave the native cursor available')
 pc.y=-1;G.tick(state,pc,menu,'world',records,nil,.05)
-assert(sa.offset==24 and sb.offset==0,'down must scroll only hovered card')
+assert(sa.offset==24 and sb.offset==0 and not menu.useRightStickInputs,'down must scroll only hovered card and reserve its input')
 pc.y=1;G.tick(state,pc,menu,'world',records,nil,.05);assert(sa.offset==0)
 pc.y=.15;G.tick(state,pc,menu,'world',records,nil,.05);assert(sa.offset==0,'deadzone drift')
 a.hover=false;b.focus=true;pc.y=-1;G.tick(state,pc,menu,'world',records,nil,.05);assert(sb.offset==24,'focus follows selection')
 sb.offset=999;G.tick(state,pc,menu,'world',records,nil,.05);assert(sb.offset==1000)
 sb.offset=0;G.tick(state,pc,menu,'world',records,nil,5);assert(sb.offset==24,'long frame clamp')
-b.parent=object('hidden');b.parent.Visibility=2;local reads=pc.reads
-G.tick(state,pc,menu,'world',records,nil,.05);assert(menu.useRightStickInputs and pc.reads==reads,'hidden cards do not steal stick')
+b.parent=object('hidden');b.parent.Visibility=2;local saved=sb.offset
+G.tick(state,pc,menu,'world',records,nil,.05);assert(menu.useRightStickInputs and sb.offset==saved,'hidden cards do not scroll or steal stick')
 b.parent=nil;b.focus=false;sa.finish=0;a.hover=true
 G.tick(state,pc,menu,'world',records,nil,.05);assert(menu.useRightStickInputs,'short card leaves cursor alone')
 sa.finish=1000;local f7=scroll('F7');G.tick(state,pc,menu,'world',records,f7,.05);assert(f7.offset==24 and sa.offset==0,'F7 priority')

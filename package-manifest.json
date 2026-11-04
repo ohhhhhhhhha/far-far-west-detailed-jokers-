@@ -109,6 +109,10 @@
     {
       "source": "FFWTools/src/FFWJokerInfo/Scripts/ControllerScroll.lua",
       "path": "GameRoot/FarFarWest/Binaries/Win64/ue4ss/Mods/FFWJokerInfo/Scripts/ControllerScroll.lua"
+    },
+    {
+      "source": "RELEASE_NOTES.md",
+      "path": "RELEASE_NOTES.md"
     }
   ],
   "directories": [],
@@ -140,6 +144,7 @@
     "FFWTools/tests/bilingual_catalog_test.lua",
     "FFWTools/tests/common_mouse_test.lua",
     "FFWTools/tests/controller_audit_test.lua",
+    "FFWTools/tests/controller_performance_test.lua",
     "FFWTools/tests/controller_scroll_runtime_test.lua",
     "FFWTools/tests/controller_scroll_test.lua",
     "FFWTools/tests/joker_applicability_test.lua",
@@ -158,21 +163,28 @@
     "FFWTools/tests/joker_hero_completion_test.lua",
     "FFWTools/tests/joker_inline_layout_test.lua",
     "FFWTools/tests/joker_inventory_test.lua",
+    "FFWTools/tests/joker_layout_recovery_test.lua",
     "FFWTools/tests/joker_legacy_reload_test.lua",
     "FFWTools/tests/joker_lifecycle_test.lua",
     "FFWTools/tests/joker_live_context_test.lua",
     "FFWTools/tests/joker_mouse_test.lua",
+    "FFWTools/tests/joker_navigation_snapshot_test.lua",
     "FFWTools/tests/joker_next_rules_spec.lua",
     "FFWTools/tests/joker_panel_test.lua",
+    "FFWTools/tests/joker_partial_context_labels_test.lua",
     "FFWTools/tests/joker_partial_selection_test.lua",
+    "FFWTools/tests/joker_performance_runtime_test.lua",
+    "FFWTools/tests/joker_reactive_cache_failure_test.lua",
     "FFWTools/tests/joker_reactive_cards_test.lua",
     "FFWTools/tests/joker_reactive_inventory_test.lua",
     "FFWTools/tests/joker_reload_context_test.lua",
+    "FFWTools/tests/joker_render_cache_test.lua",
     "FFWTools/tests/joker_rules_test.lua",
     "FFWTools/tests/joker_runtime_test.lua",
     "FFWTools/tests/joker_scope_test.lua",
     "FFWTools/tests/joker_spell_and_events_test.lua",
     "FFWTools/tests/joker_spell_context_test.lua",
+    "FFWTools/tests/joker_spell_read_failure_test.lua",
     "FFWTools/tests/joker_upgrade_completion_test.lua",
     "FFWTools/tests/joker_viewport_test.lua",
     "FFWTools/tests/joker_weapon_completion_test.lua",
@@ -191,6 +203,9 @@
     "package-manifest.json",
     "package.json",
     "package.mjs",
-    "release.json"
+    "release.json",
+    "RELEASE_NOTES.md",
+    "NEXUS_MAIN_FILE_DESCRIPTION.txt",
+    "NEXUS_SOURCE_FILE_DESCRIPTION.txt"
   ]
 }

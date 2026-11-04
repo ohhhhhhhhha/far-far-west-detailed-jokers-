@@ -103,7 +103,8 @@ function P.description(id,s,item,kind,original)
     end
     local lines={};local groups,missingSelection=groupsFor(s,id,item)
     for _,label in ipairs(missingSelection or {}) do lines[#lines+1]=label..'：效果待读取' end
-    if #groups==0 and not s.complete then return base..L.text('效果待读取'),{noBonus=false} end
+    -- Missing selection is reported above; eligible groups check their own
+    -- completeness below. Known whitelist exclusions need no inventory counts.
     local function differs(a,b)
         if type(a)=='number' and type(b)=='number' then return math.abs(a-b)>1e-8 end
         return a~=b
@@ -192,7 +193,7 @@ function P.description(id,s,item,kind,original)
                     details[#details+1]=L.choose('反伤＝减伤后伤害＋附加值','Retaliation = post-mitigation damage + bonus')
                     details[#details+1]=L.choose('敌人造成生命伤害时触发','Triggers when an enemy damages your health')
                 end
-                if #groups>1 then lines[#lines+1]=label..'：' end
+                if #groups>1 or (missingSelection and #missingSelection>0) then lines[#lines+1]=label..'：' end
                 local elementCount=p.current.metrics.equippedSameElementSpells
                 if elementCount then lines[#lines+1]=elementCount.label..'：'..Effects.formatMetric(elementCount) end
                 for _,detail in ipairs(details) do lines[#lines+1]=detail end
@@ -220,9 +221,16 @@ function P.entries(s)
     end
     return entries
 end
-function P.page(s,index,pageSize)
+function P.entryKey(entry)
+    if not entry or not entry.card or not entry.group then return nil end
+    return entry.group.itemName:lower()..':'..entry.card.id:lower()
+end
+function P.page(s,index,pageSize,selectionKey)
     pageSize=math.max(1,math.min(10,math.floor(pageSize or 10)))
     local entries=P.entries(s)
+    if selectionKey then
+        for position,entry in ipairs(entries) do if P.entryKey(entry)==selectionKey then index=position;break end end
+    end
     index=math.max(1,math.min(index or 1,math.max(1,#entries)))
     local page={index=index,count=#entries,entries=entries,rows={},pageSize=pageSize,pageNumber=math.floor((index-1)/pageSize)+1,
         pageCount=math.max(1,math.ceil(#entries/pageSize)),title=L.text('当前奇术卡'),list='',detail=''}
@@ -230,7 +238,7 @@ function P.page(s,index,pageSize)
         page.detail=L.text(s.complete and '当前没有已生效的奇术卡或升级。' or '总份数待读取：'..table.concat(s.missing,'、'))
         return page
     end
-    local selected=entries[index];page.selected=selected
+    local selected=entries[index];page.selected=selected;page.selectionKey=P.entryKey(selected)
     local g,c=selected.group,selected.card
     local start=math.floor((index-1)/pageSize)*pageSize+1
     local list={}
@@ -239,7 +247,7 @@ function P.page(s,index,pageSize)
         local caption=L.text(e.group.label)..' · '..(L.card(e.card.id,'name') or e.card.name)
             ..(isUpgrade(e.card) and (' '..e.count..L.text('级')) or (' ×'..e.count))
         list[#list+1]=(k==index and '▶ ' or '   ')..caption
-        page.rows[#page.rows+1]={index=k,text=list[#list],buttonText=caption,selected=k==index}
+        page.rows[#page.rows+1]={index=k,key=P.entryKey(e),text=list[#list],buttonText=caption,selected=k==index}
     end
     page.list=table.concat(list,'\n\n')
     page.title=L.text(g.label)..' · '..(L.card(c.id,'name') or c.name)..'  ['..index..'/'..#entries..']'
@@ -305,8 +313,11 @@ end
 function P.refreshLayout(view)
     local layout=P.layout(viewport(view.getController()))
     local old=view.layout
-    if old and old.width==layout.width and old.height==layout.height and old.dpiScale==layout.dpiScale then return old end
-    view.layout=layout
+    if old and not view.layoutDirty and old.width==layout.width and old.height==layout.height and old.dpiScale==layout.dpiScale then return old end
+    -- Native setters may fail after earlier geometry was already changed.
+    -- Keep the last complete layout for navigation, but force a full retry
+    -- even if the viewport returns to those dimensions before the next call.
+    view.layoutDirty=true
     local function place(widget,x,y,w,h,size)
         widget.Slot:SetPosition({X=x,Y=y});widget.Slot:SetSize({X=w,Y=h})
         if size then local f=widget.Font;f.Size=size;widget:SetFont(f) end
@@ -323,6 +334,7 @@ function P.refreshLayout(view)
     view.widget:SetDesiredSizeInViewport({X=w,Y=h})
     -- Position and desired size are logical Slate units; do not divide by DPI twice.
     view.widget:SetPositionInViewport({X=layout.margin,Y=layout.margin},false)
+    view.layout=layout;view.layoutDirty=false
     return layout
 end
 function P.setNoBonusText(parent,tree,source,text,visible)
@@ -439,14 +451,50 @@ function P.createView(query,onAction,options)
     if options.isCurrent and not options.isCurrent() then P.destroyView(view,true);return end
     return view
 end
+local renderFields={'title','hint','list','plainDetail','detail','count','index','pageNumber','pageCount','noBonus','searchable','inputHint'}
+local rowFields={'index','key','text','buttonText','selected'}
+local function sameRender(state,page,layout,detailKey)
+    if not state or state.layout~=layout or state.language~=L.revision or state.detailKey~=detailKey then return false end
+    for _,field in ipairs(renderFields) do if state[field]~=page[field] then return false end end
+    for index=1,10 do
+        local old,row=state.rows[index],(page.rows or {})[index]
+        if (old~=nil)~=(row~=nil) then return false end
+        if row then for _,field in ipairs(rowFields) do if old[field]~=row[field] then return false end end end
+    end
+    return true
+end
+local function rememberRender(page,layout,detailKey)
+    local state={layout=layout,language=L.revision,detailKey=detailKey,rows={}}
+    for _,field in ipairs(renderFields) do state[field]=page[field] end
+    for index=1,10 do
+        local row=(page.rows or {})[index]
+        if row then
+            local saved={};for _,field in ipairs(rowFields) do saved[field]=row[field] end
+            state.rows[index]=saved
+        end
+    end
+    return state
+end
 function P.render(view,page,visible,layout)
     if not P.isViewCurrent(view) then P.destroyView(view,true);return false end
     if not visible then P.hideView(view);return true end
     assert(valid(view.widget),'面板已失效')
     -- Native menus may remove every viewport widget without destroying it.
     -- Reattach only after the current-world/controller check above succeeds.
-    if not view.widget:IsInViewport() then view.widget:AddToViewport(9950) end
+    local attached=view.widget:IsInViewport()
+    if not attached then view.widget:AddToViewport(9950) end
     layout=layout or P.refreshLayout(view)
+    local selected=page.selected
+    local detailKey=selected and selected.card and ((selected.group and selected.group.itemName or '')..':'..selected.card.id) or page.index
+    local searching=visible and page.searchable and valid(view.search)
+    if attached and view.widget.Visibility==4 and sameRender(view.rendered,page,layout,detailKey)
+        and (not page.noBonus or valid(view.noBonusText)) then
+        view.mouse:show(searching and view.search or view.widget)
+        return true
+    end
+    -- Invalidate before writes: a partial failure must not make a later revert
+    -- look cached while the widgets still contain half of the failed update.
+    view.rendered=nil
     view.title:SetText(FText(page.title))
     local hint=layout.compact and L.choose('F7 开关 · 右摇杆／滚轮滚动','F7 Toggle · Right stick / wheel scroll') or
         L.choose('点击选卡／翻页；右摇杆或描述区滚轮滚动   F7 开关   F5/F6 选卡',
@@ -455,7 +503,6 @@ function P.render(view,page,visible,layout)
     view.list:SetText(FText(page.list))
     view.detail:SetText(FText(page.plainDetail or page.detail))
     view.noBonusText=P.setNoBonusText(view.detailBox,view.tree,view.detail,view.noBonusText,page.noBonus)
-    local searching=visible and page.searchable and valid(view.search)
     if valid(view.search) then
         view.search:SetHintText(FText(page.inputHint or L.text('搜索卡名 / 英文 ID')))
         view.search:SetVisibility(searching and 0 or 2)
@@ -464,6 +511,8 @@ function P.render(view,page,visible,layout)
     end
     view.list:SetVisibility(page.searchable and 3 or 2)
     local controls=not page.searchable
+    view.rowKeys={}
+    for _,row in ipairs(page.rows or {}) do view.rowKeys[row.index]=row.key end
     for index=1,10 do
         local row=(page.rows or {})[index]
         view.mouse:button('row-'..index,{text=row and (row.buttonText or row.text) or '',action='select',value=row and row.index,
@@ -484,14 +533,14 @@ function P.render(view,page,visible,layout)
     view.mouse:button('close',{text=L.choose('关闭','Close'),action='close',x=layout.width-layout.pad-90,
         y=layout.compact and 10 or 18,width=90,height=36,size=layout.compact and 14 or 16})
     view.pageLabel:SetText(FText(controls and string.format(L.choose('第 %d / %d 页','Page %d / %d'),page.pageNumber or 1,page.pageCount or 1) or ''))
-    local selected=page.selected
-    local detailKey=selected and selected.card and ((selected.group and selected.group.itemName or '')..':'..selected.card.id) or page.index
     if view.detailKey~=detailKey then view.detailScroll:SetScrollOffset(0);view.detailKey=detailKey end
     -- SelfHitTestInvisible lets native buttons and the ScrollBox receive mouse
     -- input; Collapsed removes every hidden hit target.
     view.widget:SetVisibility(visible and 4 or 2)
     view.widget:SetColorAndOpacity(color(1,1,1,visible and 1 or 0))
     if visible then view.mouse:show(searching and view.search or view.widget) else view.mouse:hide() end
+    view.rendered=rememberRender(page,layout,detailKey)
+    return true
 end
 function P.isViewCurrent(view)
     if not view or view.disposed or not view.mouse then return false end
@@ -503,6 +552,7 @@ function P.isViewCurrent(view)
     return view.getController~=nil and view.mouse:isCurrent(view.getController())
 end
 function P.hideView(view)
+    if view then view.rendered=nil end
     if not P.isViewCurrent(view) then P.destroyView(view,true);return false end
     if view.mouse then view.mouse:hide() else P.setSearchInput(view,false) end
     local ok=pcall(function() view.widget:SetVisibility(2) end)

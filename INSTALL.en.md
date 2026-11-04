@@ -1,11 +1,11 @@
 # Detailed Joker Effects — installation, migration and troubleshooting
 
-Component: FFWJokerInfo 0.3.0-beta.10. Updated 2026-11-03. This prerelease adds controller/wheel scrolling and audit fixes for missing inputs, effect comparisons, F7 input restoration and native-description cleanup. Previously published assets remain unchanged.
+Component: FFWJokerInfo 0.3.0-beta.14. Updated 2026-11-04. Beta prerelease: download and install the runtime ZIP. Prior public releases remain available for rollback.
 
 ## 1. Choose the two correct downloads
 
 - Player framework: [Nexus 2 — UE4SS for FarFarWest](https://www.nexusmods.com/farfarwest/mods/2), by anro / AnroG772. Select the Frostburn / UE 5.8 player package. The author describes the player archive as **UE4SS-FarFarWest-v3.0.1-1183-frostburn.zip**. The actual checked Main file is **UE4SS-FarFarWest**, version **3.0.1.1183**, file ID **242**; Nexus may add identifiers to the downloaded filename. Players do not need the zDEV developer package.
-- Card component: [FFWJokerInfo-0.3.0-beta.10.zip from GitHub Releases](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/tag/v0.3.0-beta.10) or the beta.10 Main file on [Nexus 115](https://www.nexusmods.com/farfarwest/mods/115?tab=files). This is a prerelease/test build; the SOURCE ZIP is for development.
+- Card component: [FFWJokerInfo-0.3.0-beta.14.zip from Releases](https://github.com/ohhhhhhhhha/far-far-west-detailed-jokers-/releases/tag/v0.3.0-beta.14). The SOURCE ZIP is for development.
 
 Use the Nexus 2 game-specific package. It includes the signatures and configuration required by this game. UE4SS on GitHub remains the upstream source reference.
 
@@ -64,9 +64,9 @@ For startup failures, inspect the final error in ue4ss/UE4SS.log. After a game u
 
 ## 5. Install the card component
 
-The beta.10 GameRoot contains only the 15 FFWJokerInfo files. It contains no framework DLLs, settings, shared helpers or signatures. Install the Nexus dependency first.
+The beta.14 GameRoot contains only the 15 FFWJokerInfo files. It contains no framework DLLs, settings, shared helpers or signatures. Install the Nexus dependency first.
 
-1. Fully exit and extract FFWJokerInfo-0.3.0-beta.10.zip outside the game directory.
+1. Fully exit and extract FFWJokerInfo-0.3.0-beta.14.zip outside the game directory.
 2. Open the archive’s **GameRoot** folder. Copy the **FarFarWest** folder inside it into the game root opened by Steam’s Browse local files, merging the matching directory. This destination contains **FarFarWest.exe**.
 3. Do not copy the GameRoot folder itself or put its whole contents into the inner Win64 directory. The framework and content ZIPs have different destinations.
 4. The resulting entry point must be:
@@ -88,7 +88,7 @@ Keep Nexus’s UE4SS_Signatures, UE4SS-settings.ini, mods.txt/mods.json, Mods/sh
 - Fully launch the game and enter the lobby. Focus the game window and press F7; laptops using media-key mode may require Fn+F7.
 - Select a card, page, scroll details, close the panel and check that camera control returns. In a mission, inspect a pickup and a Tab card tooltip.
 
-The beta.5/6 baseline had confirmed single-player F7, mouse and return-to-title checks. For beta.10, also test the right stick and mouse wheel on a long pickup/town/Tab description and in F7; check native cursor control returns when the card/menu closes. After opening and closing a native menu, also check F7 mouse control and camera restoration. If a weapon or spell read is not yet available, its comparison should stay pending. Controller hardware, actual Slate rendering and LAN/IP-direct-connect performance still need in-game acceptance.
+The beta.5/6 baseline had confirmed single-player F7, mouse and return-to-title checks. For beta.14, also test the right stick and mouse wheel on a long pickup/town/Tab description and in F7; check native cursor control returns when the card/menu closes. After opening and closing a native menu, also check F7 mouse control and camera restoration. If a weapon or spell read is not yet available, its comparison should stay pending. Controller hardware, actual Slate rendering and LAN/IP-direct-connect performance still need in-game acceptance.
 
 ## 7. Controls
 
@@ -112,7 +112,7 @@ Original pickup and Tab-hover descriptions are enhanced automatically. F7 need n
 4. Very old mixed releases may contain FFWJokerInfo/Scripts/Spawner.lua, whose role moved to the independent trainer. After backup, move that obsolete file out as directed by the relevant version notes.
 5. Fully restart and repeat the short check in section 6. Do not leave two enabled copies of the card mod under Mods.
 
-beta.10 keeps the content-only layout introduced in beta.6. Previously published ZIPs retain their hashes. Do not copy a signature back from an older content package.
+beta.14 keeps the content-only layout introduced in beta.6. Previously published ZIPs retain their hashes. Do not copy a signature back from an older content package.
 
 ## 9. Troubleshooting
 

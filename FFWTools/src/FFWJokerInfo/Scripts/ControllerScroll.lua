@@ -22,32 +22,57 @@ local function visible(o)
     return false
 end
 local function score(r,pc,scope)
-    if not r or (r.widget and not valid(r.widget)) or r.scopeKey~=scope or not visible(r.scrollOwner) or not visible(r.scroll) then return 0 end
-    if call(r.scroll,'IsHovered') then return 3 end
-    if call(r.scrollOwner,'IsHovered') or field(r.scrollOwner,'Hover')==true then return 2 end
-    if call(r.scrollOwner,'HasUserFocus',pc) or call(r.scrollOwner,'HasUserFocusedDescendants',pc) then return 1 end
+    if not r or r.scopeKey~=scope or (r.widget and not valid(r.widget))
+        or not valid(r.scrollOwner) or not valid(r.scroll) then return 0 end
+    -- Most retained cards are not selected. Reject them before walking UMG parents.
+    local rank=0
+    if call(r.scroll,'IsHovered') then rank=3
+    elseif call(r.scrollOwner,'IsHovered') or field(r.scrollOwner,'Hover')==true then rank=2
+    elseif call(r.scrollOwner,'HasUserFocus',pc) or call(r.scrollOwner,'HasUserFocusedDescendants',pc) then rank=1 end
+    if rank>0 and visible(r.scrollOwner) and visible(r.scroll) then return rank end
     return 0
 end
 function G.release(s,menu)
     if s.menuKey and key(menu)==s.menuKey and field(menu,'useRightStickInputs')==false then
         menu.useRightStickInputs=s.priorRight
     end
-    s.menuKey=nil;s.priorRight=nil;s.target=nil;s.selectionTime=0
+    s.menuKey=nil;s.priorRight=nil;s.target=nil;s.selectionTime=nil;s.moving=false
 end
 function G.nativeModeChanged(s,menu)
     -- The native menu just assigned its new policy. Relinquish the old lease
     -- without writing its previous value over that new policy.
-    if s.menuKey==key(menu) then s.menuKey=nil;s.priorRight=nil;s.target=nil;s.selectionTime=0 end
+    if s.menuKey==key(menu) then s.menuKey=nil;s.priorRight=nil;s.target=nil;s.selectionTime=nil;s.moving=false end
 end
 function G.tick(s,pc,menu,scope,records,detail,dt)
     if not valid(pc) or not valid(menu) then return end
-    dt=math.max(0,math.min(.05,tonumber(dt) or 0))
+    local elapsed=math.max(0,tonumber(dt) or 0)
+    dt=math.min(.05,elapsed) -- clamp movement, not target-discovery time
+    -- Poll the actual axis before touching retained card trees. Mouse-only users
+    -- should not pay for controller target discovery on every menu update.
+    local ok,y=pcall(function() return pc:GetInputAnalogKeyState({KeyName=FName('Gamepad_RightY')}) end)
+    if not ok then G.release(s,menu);error(y) end
+    if type(y)~='number' or y~=y then G.release(s,menu);return end
+    s.moving=false
+    if math.abs(y)<=.2 then
+        if s.menuKey then
+            local scroll=detail
+            if not valid(scroll) then
+                local cached=records[s.target]
+                if score(cached,pc,scope)>0 then scroll=cached.scroll end
+            end
+            local finish=valid(scroll) and call(scroll,'GetScrollOffsetOfEnd')
+            if type(finish)~='number' or finish<=0 then G.release(s,menu) end
+        end
+        s.selectionTime=nil -- new movement should select immediately
+        return
+    end
     local scroll=detail
     if not valid(scroll) then
-        s.selectionTime=(s.selectionTime or 0)+dt
+        s.selectionTime=(s.selectionTime or .1)+elapsed
         local cached=records[s.target]
         local best=score(cached,pc,scope)
-        if best>0 and s.selectionTime<.1 then scroll=cached.scroll
+        if best>0 and s.selectionTime<.1-1e-9 then scroll=cached.scroll
+        elseif not cached and s.selectionTime<.1-1e-9 then return
         else
             best=0;s.target=nil;s.selectionTime=0
             for id,r in pairs(records) do
@@ -57,23 +82,25 @@ function G.tick(s,pc,menu,scope,records,detail,dt)
         end
     end
     local finish=valid(scroll) and call(scroll,'GetScrollOffsetOfEnd')
-    if type(finish)~='number' or finish<=0 then G.release(s,menu);return end
+    if type(finish)~='number' or finish<=0 then
+        local elapsed=s.selectionTime;G.release(s,menu);s.selectionTime=elapsed
+        return
+    end
     local mk=key(menu)
     if s.menuKey~=mk then
+        local target,elapsed=s.target,s.selectionTime
         G.release(s,menu);s.menuKey=mk;s.priorRight=field(menu,'useRightStickInputs')
+        s.target=target;s.selectionTime=elapsed
     end
-    -- This flag controls only the native right-stick UI cursor. Left-stick UI
-    -- movement and game input mappings are untouched.
-    local ok,y=pcall(function() return pc:GetInputAnalogKeyState({KeyName=FName('Gamepad_RightY')}) end)
-    if not ok then G.release(s,menu);error(y) end
-    if type(y)~='number' or y~=y then G.release(s,menu);return end
-    menu.useRightStickInputs=false
-    if math.abs(y)<=.2 then return end
+    -- Reserve only the right-stick UI cursor; leave left-stick mappings intact.
+    if field(menu,'useRightStickInputs')~=false then menu.useRightStickInputs=false end
+    s.moving=true
     local magnitude=(math.min(1,math.abs(y))-.2)/.8
     local delta=(y>0 and -1 or 1)*magnitude*480*dt
     local moved,err=pcall(function()
         local offset=scroll:GetScrollOffset()
-        scroll:SetScrollOffset(math.max(0,math.min(finish,offset+delta)))
+        local nextOffset=math.max(0,math.min(finish,offset+delta))
+        if nextOffset~=offset then scroll:SetScrollOffset(nextOffset) end
     end)
     if not moved then G.release(s,menu);error(err) end
 end

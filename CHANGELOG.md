@@ -1,5 +1,40 @@
 # Changes / 更新记录
 
+## 0.3.0-beta.14 — 2026-11-04 prerelease
+
+- Commit layout state only after all native geometry writes succeed. Failed updates remain dirty and retry even if the viewport returns to its previous size.
+- Retain the last completed layout for navigation while recovering. Add fault-injection coverage for unchanged-size retries, reverted size and input restoration.
+- Includes the performance/navigation, spell-slot and reactive-cache fixes since public beta.10 (beta.11–13 below). Real controller, Slate and multiplayer FPS acceptance remain pending.
+
+修复窗口变化时部分布局写入失败后不再重试的问题；保留最后完整布局，成功后才提交新状态。此前性能和操作优化继续保留。
+
+## 0.3.0-beta.13 — 2026-11-04 UI performance and interaction test build
+
+- Navigate the displayed snapshot without full inventory reads or global native-card scans. Keep the selected item/card identity across background insertions and temporarily incomplete reads; retain queued click targets.
+- Skip identical F7 control updates. Refresh after changed data, language, DPI, hide/reopen, detach, reload or a partial failed update.
+- Label mixed known/unknown weapon effects and preserve confirmed whitelist exclusions independently of unrelated missing counts.
+- Offline call counts: five navigation actions, inventory 5→0 and scans 30→0; six unchanged F7 refreshes, control setters 792→0. No actual FPS claim.
+
+优化F7选卡、翻页与后台刷新，减少重复读取、扫描和控件写入；修复刷新/排队点击选错条目及部分读数的归属歧义。本机测试版，真实手柄、Slate与联机性能待验证。
+
+## 0.3.0-beta.12 — 2026-11-04 follow-up audit test build
+
+- Preserve spell-slot field reflection failures through the existing error boundary and per-slot placeholder. Missing slots no longer disappear from mastery-card comparisons as if they were empty.
+- Recover actual cooldown results on a successful later snapshot; retain true empty-slot behavior and bilingual output.
+- Invalidate old Hit Me observations when a new eligible trigger cannot be read or its eligibility is unknown. Known full-health events keep the unchanged cache.
+- Keep beta.11 input/performance fixes. This is a local test build; physical controller, native rendering and multiplayer FPS acceptance remain pending.
+
+修复法术槽字段读取异常被当作空槽导致的“无加成”误判；错误读数保留待定、恢复后重新计算，真正空槽行为不变。保留此前性能修复。
+
+## 0.3.0-beta.11 — 2026-11-04 performance hotfix test build
+
+- Read the right-stick axis before searching cards; skip whole-card discovery with neutral input. Check hover/focus before UMG ancestors and throttle no-target retries.
+- Filter the current local menu and gate by real time before complete context reads: 10Hz neutral, 30Hz moving. Skip controller work when neither native card records nor F7 need it.
+- Preserve the current scroll target lease across neutral frames; avoid repeated writes at scroll boundaries. Existing mouse-wheel routing and card rules remain unchanged.
+- Native-call regressions reproduce the old excess work and verify the reduction. Hardware/Slate/multiplayer FPS are still pending; this local test build does not claim all reported stutters are resolved.
+
+修复手柄路径的无输入全量遍历、限频之前的角色查询、无关菜单开销及边界重复写入。保留卡牌规则与鼠标滚轮；当前为本机测试版。
+
 ## 0.3.0-beta.10 — 2026-11-03 follow-up audit
 
 - Treat unread primary/secondary weapon IDs as pending comparisons instead of No bonus. Preserve supported, explicitly excluded and hero-only previews.
