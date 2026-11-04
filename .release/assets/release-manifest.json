@@ -1,0 +1,20 @@
+{
+  "id": "FFWJokerInfo",
+  "version": "0.3.0-beta.14",
+  "framework": "UE4SS",
+  "installation": "manual-copy",
+  "artifacts": [
+    {
+      "file": "FFWJokerInfo-0.3.0-beta.14.zip",
+      "bytes": 176501,
+      "sha256": "197426d40f4b8030844835e54d225f0f7c7ec1c70b272ebd01fa912ecac251a0",
+      "kind": "runtime"
+    },
+    {
+      "file": "FFWJokerInfo-source-0.3.0-beta.14.zip",
+      "bytes": 276752,
+      "sha256": "fa0d0d20e62ac03cba41c1e92663aa81d876cea7784c481ede7049379e7da46a",
+      "kind": "source"
+    }
+  ]
+}

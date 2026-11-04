@@ -1,0 +1,36 @@
+{
+  "tag": "v0.3.0-beta.14",
+  "targetCommit": "151a5dab7f96f263934933bb4de1a6deed1f5fc5",
+  "title": "Detailed Joker Effects 0.3.0-beta.14 — performance and recovery fixes",
+  "body": "# FFWJokerInfo 0.3.0-beta.14\n\nBeta prerelease; changes since public 0.3.0-beta.10:\n\n- Reduce controller scrolling work: neutral input skips full-card discovery; local-menu checks and 10Hz idle / 30Hz moving gates precede full context reads; unchanged boundary offsets are not rewritten.\n- Keep unread spell slots pending and recover on the next successful read. Invalidate stale Hit Me observations when a new eligible trigger cannot be read.\n- Select and page from the displayed F7 snapshot. Keep card identity through background insertions and incomplete reads; queued clicks keep their original target.\n- Skip unchanged F7 control writes; refresh after changed data, language, viewport, reopen, detach or reload. Label mixed known/unknown weapon effects correctly.\n- Retry interrupted layout writes, including when the viewport returns to its previous size; preserve the last completed layout for navigation.\n\nOffline regressions measure fewer native-call attempts, not game FPS. Physical controller behavior, native Slate rendering and multiplayer FPS still require in-game acceptance.\n\nInstall UE4SS for FarFarWest from [Nexus mod 2](https://www.nexusmods.com/farfarwest/mods/2), version 3.0.1.1183, Main file 242. Then fully exit the game and merge the contents inside the runtime ZIP's GameRoot into the game root containing FarFarWest.exe. This package includes only the 15 card-component files; no framework files or signatures are bundled. Preserve existing Data/settings. The source ZIP is for development.\n\n---\n\n相对公开 beta.10：减少右摇杆无输入扫描及重复上下文查询；修复法术槽读取失败和“打我呀”旧缓存；F7选卡/翻页复用已显示快照，保持选择和排队点击目标；跳过无变化控件写入；改善已知/未知武器效果标注；布局写入中断后完整重试，恢复原窗口尺寸也能恢复布局。\n\n离线回归验证调用次数和恢复逻辑，真实手柄、原生Slate与联机FPS仍待实机验收。先安装 Nexus 2 专用框架3.0.1.1183（Main文件242），退出游戏后将运行包GameRoot里面的内容合并至含FarFarWest.exe的游戏根目录。仅含15个卡牌文件，不附带框架；保留已有Data/配置。SOURCE源码包用于开发。\n",
+  "assets": [
+    {
+      "name": "FFWJokerInfo-0.3.0-beta.14.zip",
+      "bytes": 176501,
+      "sha256": "197426d40f4b8030844835e54d225f0f7c7ec1c70b272ebd01fa912ecac251a0",
+      "blob": "43f9471d1db840c23828096b72a1de6df005e508",
+      "contentType": "application/zip"
+    },
+    {
+      "name": "FFWJokerInfo-source-0.3.0-beta.14.zip",
+      "bytes": 276752,
+      "sha256": "fa0d0d20e62ac03cba41c1e92663aa81d876cea7784c481ede7049379e7da46a",
+      "blob": "ac6184733758dcab4b7014c49397b526734857a7",
+      "contentType": "application/zip"
+    },
+    {
+      "name": "release-manifest.json",
+      "bytes": 525,
+      "sha256": "4315caa3e133a8d66e700eea30621f4975039b569673f423f2cc368dfed7d3f7",
+      "blob": "abb4bf882f4b2ab8db480b67be2ec3da0147a0cd",
+      "contentType": "application/json"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 201,
+      "sha256": "1692a4aafd6e428ee8d4f02c807ddbff0989cab1789f5ec03d911f5e0eae12ff",
+      "blob": "6c43cf3dc89b3b794a8f158eee421bc02cfc6e2e",
+      "contentType": "text/plain"
+    }
+  ]
+}
